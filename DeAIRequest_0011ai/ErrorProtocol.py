@@ -13,6 +13,14 @@ class ErrorProtocol(DeProtocol):
     @classmethod
     def add_docker_image(self,name):
         raise Exception("Docker image not supported")
+    
+    @classmethod
+    def set_docker_image(self,name):
+        raise Exception("Docker image not supported")
+    
+    @classmethod
+    def get_docker_image(self)->str:
+        raise Exception("Docker image not supported")
 
     @classmethod
     def remove_docker_image(self,name):

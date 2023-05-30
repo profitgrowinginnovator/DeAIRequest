@@ -23,6 +23,10 @@ class TestDeAIRequest(unittest.TestCase):
         self.assertEqual(bp.get_docker_images(),["tensorflow/tensorflow-gpu:latest", "pytorch/pytorch:3.24", "python/python-mini:3.10","test"],"Expected docker image add function to work")
         bp.remove_docker_image("test")
         self.assertEqual(bp.get_docker_images(),["tensorflow/tensorflow-gpu:latest", "pytorch/pytorch:3.24", "python/python-mini:3.10"],"Expected docker image remove function to work")
+        self.assertEqual(bp.get_docker_image(),"","Docker image is supposed to be not set")
+        bp.set_docker_image("test")
+        self.assertEqual(bp.get_docker_image(),"test","set docker image not working")
+        
         self.assertEqual(bp.get_datasets(),list(),"Expected empty datasets")
         bp.add_dataset(bp.get_url_data_type(),"url1")
         bp.add_dataset(bp.get_file_data_type(),"file1")
@@ -43,6 +47,12 @@ class TestDeAIRequest(unittest.TestCase):
 
     def test_error_submit_job(self):
         ep = ErrorProtocol()
+        with self.assertRaises(Exception) as context:
+            ep.set_docker_image("test")
+        self.assertTrue('Docker image not supported', context.exception)
+        with self.assertRaises(Exception) as context:
+            image=ep.get_docker_image()
+        self.assertTrue('Docker image not supported', context.exception)
         with self.assertRaises(Exception) as context:
             job = ep.submit_job(Path("."))
         self.assertTrue('job not supported', context.exception)

@@ -8,6 +8,7 @@ The Bacalhau.org protocol
 """
 class BacalhauProtocol(DeProtocol):
     docker_images = ["tensorflow/tensorflow-gpu:latest","pytorch/pytorch:3.24","python/python-mini:3.10"]
+    docker_image = ""
     datasets = list(dict())
 
     """
@@ -76,6 +77,16 @@ class BacalhauProtocol(DeProtocol):
         return self.docker_images
     
     """
+    Get the docker image set for this job
+    @oaram self:
+    @return: the docker image set for this job
+    @raise: exception is thrown if no docker image is set
+    """
+    @classmethod
+    def get_docker_image(self)->str:
+        return self.docker_image
+
+    """
     Add a docker image
     @oaram self:
     @param value: the docker image
@@ -84,6 +95,16 @@ class BacalhauProtocol(DeProtocol):
     @classmethod
     def add_docker_image(self,value):
         self.docker_images.append(value)
+
+    """
+    Set the docker image to use for this job
+    @oaram self:
+    @param value: the docker image
+    @raise: exception is thrown if the docker image is not found
+    """
+    @classmethod
+    def set_docker_image(self,value):
+        self.docker_image = value
 
     """
     Remove a docker image
