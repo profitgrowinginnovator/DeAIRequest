@@ -1,5 +1,5 @@
 from pathlib import Path
-from DeAIRequest_0011ai.DeProtocol import DeProtocol
+from deairequest.DeProtocol import DeProtocol
 """
 Each method will raise an exception to test error scenarios
 """

@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from DeAIRequest_0011ai import BacalhauProtocol, ErrorProtocol
+from deairequest import BacalhauProtocol, ErrorProtocol
 
 """
 Test the DeAIRequest

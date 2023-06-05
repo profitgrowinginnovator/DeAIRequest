@@ -1,7 +1,7 @@
 
 import requests
 from pathlib import Path
-from DeAIRequest_0011ai.DeProtocol import DeProtocol
+from deairequest.DeProtocol import DeProtocol
 
 """
 The Bacalhau.org protocol
