@@ -5,7 +5,10 @@ Each method will raise an exception to test error scenarios
 """
 class ErrorProtocol(DeProtocol):
     def get_name(self):
-        raise Exception("Deprotocol not supported")
+        return "error"
+    
+    def get_icon(self):
+        return Path("./logo.svg")
 
     def get_data_types(self):
         raise Exception("Data types not supported")

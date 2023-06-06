@@ -21,6 +21,15 @@ class BacalhauProtocol(DeProtocol):
         return "bacalhau"
     
     """
+    Get the icon of protocol that is used
+    @oaram self:
+    @preturn: the icon of the protocol
+    @raise: exception is thrown if no name is supported
+    """
+    def get_icon(self)->Path:
+        return Path("./logo.svg")
+    
+    """
     Get all the supported data types of this type of protocol
     @oaram self:
     @preturn: the list of data types
@@ -94,6 +103,7 @@ class BacalhauProtocol(DeProtocol):
     """
     @classmethod
     def add_docker_image(self,value):
+        
         self.docker_images.append(value)
 
     """

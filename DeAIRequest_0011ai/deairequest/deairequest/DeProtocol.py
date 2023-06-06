@@ -1,6 +1,7 @@
 from abc import ABC,abstractmethod
 from pathlib import Path
 
+
 class DeProtocol(ABC):
     """
     Submit a job to the specified protocol with optional params 
@@ -22,7 +23,7 @@ class DeProtocol(ABC):
     @raises: exception if the job id is not known
     """
     @abstractmethod
-    def get_logs(self, job, params=""):
+    def get_logs(self, job:str, params=""):
         pass
 
     """
@@ -34,4 +35,24 @@ class DeProtocol(ABC):
     """
     @abstractmethod
     def get_results(self, job, output:Path):
+        pass
+
+    """
+    Get the type of protocol that is used
+    @oaram self:
+    @preturn: the name of the protocol
+    @raise: exception is thrown if no name is supported
+    """
+    @abstractmethod
+    def get_name(self)->str:
+        pass
+
+    """
+    Get the icon of protocol that is used
+    @oaram self:
+    @preturn: the icon of the protocol
+    @raise: exception is thrown if no name is supported
+    """
+    @abstractmethod
+    def get_icon(self)->Path:
         pass
