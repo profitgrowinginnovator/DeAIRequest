@@ -10,7 +10,8 @@ python -m build # build the project
 python -m unittest # run all unit tests
 
 Usage:
-bp = BacalhauProtocol()
+from deairequest import DeProtocolSelector as selector
+bp = selector.DeProtocolSelector("Bacalhau")
 bp.get_docker_images()
 if a user wants a custom image
 bp.add_docker_image("custom_images")
