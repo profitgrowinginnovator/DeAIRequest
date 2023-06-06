@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from deairequest import BacalhauProtocol, ErrorProtocol
+from deairequest import DeProtocolSelector as selector
 
 """
 Test the DeAIRequest
@@ -11,7 +11,7 @@ class TestDeAIRequest(unittest.TestCase):
         self.assertTrue(obj)
 
     def test_submit_job(self):
-        bp = BacalhauProtocol()
+        bp = selector.DeProtocolSelector("Bacalhau")
         self.assertEqual(bp.get_name(),"bacalhau","Expected name to be bacalhau")
         self.assertEqual(bp.get_data_types(),{"url","file","directory","ipfs"},"Expected data types")
         self.assertEqual(bp.get_url_data_type(),"url","Expected url data type")
@@ -46,7 +46,7 @@ class TestDeAIRequest(unittest.TestCase):
         self.assertNotEmpty(result)
 
     def test_error_submit_job(self):
-        ep = ErrorProtocol()
+        ep = selector.DeProtocolSelector("Error")
         with self.assertRaises(Exception) as context:
             ep.set_docker_image("test")
         self.assertTrue('Docker image not supported', context.exception)
