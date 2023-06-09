@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 from deairequest.DeProtocol import DeProtocol
 """
 Each method will raise an exception to test error scenarios
@@ -8,7 +9,7 @@ class ErrorProtocol(DeProtocol):
         return "error"
     
     def get_icon(self):
-        return Path("./logo.svg")
+        return Path(os.getcwd(),"logo.svg")
 
     def get_data_types(self):
         raise Exception("Data types not supported")

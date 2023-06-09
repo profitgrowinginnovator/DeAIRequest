@@ -1,6 +1,7 @@
 
 import requests
 from pathlib import Path
+import os
 from deairequest.DeProtocol import DeProtocol
 
 """
@@ -27,7 +28,7 @@ class BacalhauProtocol(DeProtocol):
     @raise: exception is thrown if no name is supported
     """
     def get_icon(self)->Path:
-        return Path("./logo.svg")
+        return Path(os.getcwd(),"logo.svg")
     
     """
     Get all the supported data types of this type of protocol
