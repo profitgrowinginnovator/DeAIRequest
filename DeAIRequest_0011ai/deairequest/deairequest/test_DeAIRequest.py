@@ -15,6 +15,7 @@ class TestDeAIRequest(unittest.TestCase):
         bp = selector.DeProtocolSelector("Bacalhau")
         self.assertEqual(bp.get_name(),"bacalhau","Expected name to be bacalhau")
         self.assertEqual(bp.get_icon(),Path(os.getcwd(),"logo.svg"), "Icon is not working")
+        self.assertEqual(bp.get_extension(),"bhl", "Extension is not working")
         self.assertEqual(bp.get_data_types(),{"url","file","directory","ipfs"},"Expected data types")
         self.assertEqual(bp.get_url_data_type(),"url","Expected url data type")
         self.assertEqual(bp.get_file_data_type(),"file","Expected file data type")

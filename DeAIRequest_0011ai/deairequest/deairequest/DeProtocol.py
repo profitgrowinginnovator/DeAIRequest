@@ -3,6 +3,8 @@ from pathlib import Path
 
 
 class DeProtocol(ABC):
+
+
     """
     Submit a job to the specified protocol with optional params 
     @oaram self:
@@ -55,4 +57,15 @@ class DeProtocol(ABC):
     """
     @abstractmethod
     def get_icon(self)->Path:
+        pass
+
+
+    """
+    Get the extension of protocol that is used
+    @oaram self:
+    @preturn: the name of the extension of the protocol
+    @raise: exception is thrown if no extension is supported
+    """
+    @abstractmethod
+    def get_extension(self)->str:
         pass

@@ -10,6 +10,9 @@ class ErrorProtocol(DeProtocol):
     
     def get_icon(self):
         return Path(os.getcwd(),"logo.svg")
+    
+    def get_extension(self):
+        return "err"
 
     def get_data_types(self):
         raise Exception("Data types not supported")

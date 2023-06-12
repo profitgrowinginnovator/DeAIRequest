@@ -31,6 +31,15 @@ class BacalhauProtocol(DeProtocol):
         return Path(os.getcwd(),"logo.svg")
     
     """
+    Get the extension of protocol that is used
+    @oaram self:
+    @preturn: the extension of the protocol
+    @raise: exception is thrown if no extension is supported
+    """
+    def get_icon(self)->Path:
+        return "bhl"
+    
+    """
     Get all the supported data types of this type of protocol
     @oaram self:
     @preturn: the list of data types
