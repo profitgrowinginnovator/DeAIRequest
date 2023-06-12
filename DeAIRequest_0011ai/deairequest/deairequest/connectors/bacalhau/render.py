@@ -1,5 +1,3 @@
-from bacalhauconnector.data.config import SameConfig
-from bacalhauconnector.data.step import Step
 from typing import Mapping, Tuple
 from pathlib import Path
 import os
@@ -9,16 +7,17 @@ import subprocess
 import sys
 
 
-def render(path: str, steps: Mapping[str, Step], config: SameConfig) -> Tuple[Path, str]:
+def render(path: str, notebook: Path, config: dict) -> Tuple[Path, str]:
     inputs = "inputs"
     inputspath = os.path.join(path,inputs)
     os.mkdir(inputspath)
     codefile = os.path.join(inputspath,"code.py")
 
     # Extract the code from the notebook and write to code.py
+    # TODO extract code from notebook
+    
     codewriter = open(codefile, "w")
-    for name, step in steps.items():
-        codewriter.writelines(step.code)
+    codewriter.writelines(code)
     codewriter.close()
 
 

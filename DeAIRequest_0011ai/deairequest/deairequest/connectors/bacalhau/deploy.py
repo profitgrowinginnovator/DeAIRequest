@@ -1,25 +1,20 @@
-from bacalhauconnector.data.config import SameConfig
 from bacalhau_sdk.api import submit
 from bacalhau_sdk.config import get_client_id
 from bacalhau_apiclient.models.storage_spec import StorageSpec
 from bacalhau_apiclient.models.spec import Spec
 from bacalhau_apiclient.models.job_spec_language import JobSpecLanguage
 from bacalhau_apiclient.models.job_spec_docker import JobSpecDocker
-#from bacalhau_apiclient.models.job_sharding_config import JobShardingConfig
-#from bacalhau_apiclient.models.job_execution_plan import JobExecutionPlan
-#from bacalhau_apiclient.models.submit_response import JobResponse
 from bacalhau_apiclient.models.deal import Deal
 from pathlib import Path
 import os
 import base64
 import tarfile
 import ipfsapi
-#import docker
-#import hashlib
 
 
 
-def deploy(base_path: Path, root_file: str, config: SameConfig):
+
+def deploy(base_path: Path, root_file: str, config: dict):
     # The 'initiator' function expects a JSON blob encoding notebook steps:
     #with (base_path / root_file).open("r") as reader:
     #    body = json.load(reader)
@@ -39,7 +34,7 @@ def deploy(base_path: Path, root_file: str, config: SameConfig):
 
     return res.job.metadata.id
     
-def create_job(config: SameConfig, base_path: Path, root_file: str) -> str:
+def create_job(config: dict, base_path: Path, root_file: str) -> str:
     # use the requirements md5 hash to see if an image is already available
     #requirements=os.path.join(base_path,root_file,"requirements.txt")
     #openedFile=open(requirements,"r",encoding='utf-8')

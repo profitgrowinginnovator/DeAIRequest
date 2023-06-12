@@ -6,7 +6,7 @@ from io import BufferedReader
 from ruamel.yaml import YAML
 from pathlib import Path
 from box import Box
-import sameproject.ops.helpers as helpers
+import bacalhauconnector.ops.helpers as helpers
 import logging
 import pprint
 

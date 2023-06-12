@@ -3,7 +3,7 @@ from .conda_env import CondaEnv
 from typing import Tuple
 from pathlib import Path
 import pkg_resources
-import sameproject
+import bacalhauconnector.bacalhauconnector as bacalhauconnector
 import subprocess
 import importlib
 import logging

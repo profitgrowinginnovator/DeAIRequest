@@ -19,7 +19,8 @@ classifiers = [
 [build-system]
 requires = [
     "setuptools>=61.0",
-    "requests"
+    "requests",
+    "build"
 ]
 
 build-backend = "setuptools.build_meta"

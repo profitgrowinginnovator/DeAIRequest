@@ -6,10 +6,10 @@ import dill
 import sys
 
 
-# Private name used by sameproject for temporary modules. Must remain the same
+# Private name used by bacalhauconnector for temporary modules. Must remain the same
 # for all executions so that loading session_context doesn't clobber module
 # names and cause problems with the loader.
-_module_name = "__sameproject_user_code__"
+_module_name = "__bacalhauconnector_user_code__"
 
 
 def execute(code: str, session_context: Optional[bytes]) -> bytes:

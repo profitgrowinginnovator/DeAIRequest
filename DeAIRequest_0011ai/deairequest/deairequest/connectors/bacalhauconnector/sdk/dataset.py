@@ -1,5 +1,5 @@
 from multiprocessing.sharedctypes import Value
-from sameproject.data.config import SameConfig
+from bacalhauconnector.data.config import SameConfig
 from urllib.parse import urlparse
 import pandas as pd
 import yaml

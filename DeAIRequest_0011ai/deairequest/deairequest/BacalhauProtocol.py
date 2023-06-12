@@ -2,7 +2,7 @@
 import requests
 from pathlib import Path
 import os
-from deairequest.DeProtocol import DeProtocol
+from .DeProtocol import DeProtocol
 
 """
 The Bacalhau.org protocol
@@ -18,6 +18,7 @@ class BacalhauProtocol(DeProtocol):
     @preturn: the name of the protocol
     @raise: exception is thrown if no name is supported
     """
+    @classmethod
     def get_name(self)->str:
         return "bacalhau"
     
@@ -27,6 +28,7 @@ class BacalhauProtocol(DeProtocol):
     @preturn: the icon of the protocol
     @raise: exception is thrown if no name is supported
     """
+    @classmethod
     def get_icon(self)->Path:
         return Path(os.getcwd(),"logo.svg")
     
@@ -36,7 +38,8 @@ class BacalhauProtocol(DeProtocol):
     @preturn: the extension of the protocol
     @raise: exception is thrown if no extension is supported
     """
-    def get_icon(self)->Path:
+    @classmethod
+    def get_ext(self)->str:
         return "bhl"
     
     """

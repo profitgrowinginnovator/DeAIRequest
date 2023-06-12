@@ -67,5 +67,5 @@ class DeProtocol(ABC):
     @raise: exception is thrown if no extension is supported
     """
     @abstractmethod
-    def get_extension(self)->str:
+    def get_ext(self)->str:
         pass

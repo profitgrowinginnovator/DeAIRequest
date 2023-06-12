@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 import os
 
-from deairequest import DeProtocolSelector as selector
+from .DeProtocolSelector import DeProtocolSelector
 
 """
 Test the DeAIRequest
@@ -12,10 +12,10 @@ class TestDeAIRequest(unittest.TestCase):
         self.assertTrue(obj)
 
     def test_submit_job(self):
-        bp = selector.DeProtocolSelector("Bacalhau")
+        bp = DeProtocolSelector("Bacalhau")
         self.assertEqual(bp.get_name(),"bacalhau","Expected name to be bacalhau")
         self.assertEqual(bp.get_icon(),Path(os.getcwd(),"logo.svg"), "Icon is not working")
-        self.assertEqual(bp.get_extension(),"bhl", "Extension is not working")
+        self.assertEqual(bp.get_ext(),"bhl", "Extension is not working")
         self.assertEqual(bp.get_data_types(),{"url","file","directory","ipfs"},"Expected data types")
         self.assertEqual(bp.get_url_data_type(),"url","Expected url data type")
         self.assertEqual(bp.get_file_data_type(),"file","Expected file data type")
@@ -49,7 +49,7 @@ class TestDeAIRequest(unittest.TestCase):
         self.assertNotEmpty(result)
 
     def test_error_submit_job(self):
-        ep = selector.DeProtocolSelector("Error")
+        ep = DeProtocolSelector("Error")
         with self.assertRaises(Exception) as context:
             ep.set_docker_image("test")
         self.assertTrue('Docker image not supported', context.exception)

@@ -28,4 +28,4 @@ program.add_command(run)
 
 # https://click.palletsprojects.com/en/8.1.x/options/#values-from-environment-variables
 if __name__ == "__main__":
-    main(auto_envvar_prefix="SAME")
+    main(auto_envvar_prefix="DeAI")
