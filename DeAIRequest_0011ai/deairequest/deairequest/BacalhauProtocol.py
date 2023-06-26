@@ -21,7 +21,7 @@ class BacalhauProtocol(DeProtocol):
     """
     @classmethod
     def get_name(self)->str:
-        return "bacalhau"
+        return "Bacalhau"
     
     """
     Get the icon of protocol that is used
@@ -144,11 +144,12 @@ class BacalhauProtocol(DeProtocol):
     @oaram self:
     @param type: the type of data set
     @param value: the actual dataset
+    @param encrypyed: true if needs to be encrypted and false if does not need to be encrypted
     @raise: exception is thrown if the type is not supported or the value is not valid.
     """
     @classmethod
-    def add_dataset(self,type,value):
-        self.datasets.append({type:value})
+    def add_dataset(self,type,value,encrypted):
+        self.datasets.append({type:{"value":value,"encrypted":encrypted}})
 
     """
     Get all supported datasets
@@ -163,29 +164,12 @@ class BacalhauProtocol(DeProtocol):
     Remove a data set
     @oaram self:
     @param type: the type of data set
+    @param encrypyed: true if needs to be encrypted and false if does not need to be encrypted
     @param value: the value of the dataset [e.g. if type is url, this is the url]
     """
     @classmethod
-    def remove_dataset(self,type,value):
-        self.datasets.remove({type:value})  
-
-    """
-    Encrypt datasets before sending
-    @oaram self:
-    @param boolean: true = encrypt, false = send as is
-    """
-    @classmethod
-    def encrypt_datasets(self,encrypt:bool):
-        self.encrypt=encrypt
-
-    """
-    Are datasets encrypted before sending
-    @oaram self:
-    @return boolean: true = encrypt, false = send as is
-    """
-    @classmethod
-    def are_datasets_encrypted(self)->bool:
-        return self.encrypt   
+    def remove_dataset(self,type,value,encrypted):
+        self.datasets.remove({type:{"value":value,"encrypted":encrypted}})  
 
     """
     Submit a job to the specified protocol with optional params 

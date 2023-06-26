@@ -13,7 +13,7 @@ class TestDeAIRequest(unittest.TestCase):
 
     def test_submit_job(self):
         bp = DeProtocolSelector("Bacalhau")
-        self.assertEqual(bp.get_name(),"bacalhau","Expected name to be bacalhau")
+        self.assertEqual(bp.get_name(),"Bacalhau","Expected name to be bacalhau")
         self.assertEqual(bp.get_icon(),Path(os.getcwd(),"logo.svg"), "Icon is not working")
         self.assertEqual(bp.get_ext(),"bhl", "Extension is not working")
         self.assertEqual(bp.get_data_types(),{"url","file","directory","ipfs"},"Expected data types")
@@ -31,18 +31,13 @@ class TestDeAIRequest(unittest.TestCase):
         self.assertEqual(bp.get_docker_image(),"test","set docker image not working")
         
         self.assertEqual(bp.get_datasets(),list(),"Expected empty datasets")
-        bp.add_dataset(bp.get_url_data_type(),"url1")
-        bp.add_dataset(bp.get_file_data_type(),"file1")
-        bp.add_dataset(bp.get_directory_data_type(),"directory1")
-        bp.add_dataset(bp.get_ipfs_data_type(),"ipfs1")
-        compareds=[{"url":"url1"},{"file":"file1"},{"directory":"directory1"},{"ipfs":"ipfs1"}]
-        self.assertEqual(bp.get_datasets(),compareds,"Add dataset not working")
-        bp.encrypt_datasets(True)
-        self.assertEqual(bp.are_datasets_encrypted(),True,"Encryption not workng")
-        bp.encrypt_datasets(False)
-        self.assertEqual(bp.are_datasets_encrypted(),False,"Encryption not workng")
-        bp.remove_dataset(bp.get_ipfs_data_type(),"ipfs1")
-        compareds=[{"url":"url1"},{"file":"file1"},{"directory":"directory1"}]
+        bp.add_dataset(bp.get_url_data_type(),"url1",True)
+        bp.add_dataset(bp.get_file_data_type(),"file1",False)
+        bp.add_dataset(bp.get_directory_data_type(),"directory1",True)
+        bp.add_dataset(bp.get_ipfs_data_type(),"ipfs1",False)
+        compareds=[{"url":{"value":"url1","encrypted":True}},{"file":{"value":"file1","encrypted":False}},{"directory":{"value":"directory1","encrypted":True}},{"ipfs":{"value":"ipfs1","encrypted":False}}]
+        bp.remove_dataset(bp.get_ipfs_data_type(),"ipfs1",False)
+        compareds=[{"url":{"value":"url1","encrypted":True}},{"file":{"value":"file1","encrypted":False}},{"directory":{"value":"directory1","encrypted":True}}]
         self.assertEqual(bp.get_datasets(),compareds,"Remove dataset not working")
         
         job = bp.submit_job(Path("."))

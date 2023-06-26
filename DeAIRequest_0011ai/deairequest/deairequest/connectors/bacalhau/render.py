@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 
-def render(path: str, notebook: Path, config: dict) -> Tuple[Path, str]:
+def render(path: str, notebook: Path) -> Tuple[Path, str]:
     inputs = "inputs"
     inputspath = os.path.join(path,inputs)
     os.mkdir(inputspath)

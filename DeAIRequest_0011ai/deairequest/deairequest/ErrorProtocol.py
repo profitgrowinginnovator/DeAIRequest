@@ -6,7 +6,7 @@ Each method will raise an exception to test error scenarios
 """
 class ErrorProtocol(DeProtocol):
     def get_name(self):
-        return "error"
+        return "Error"
     
     def get_icon(self):
         return Path(os.getcwd(),"logo.svg")
