@@ -11,6 +11,7 @@ class BacalhauProtocol(DeProtocol):
     docker_images = ["tensorflow/tensorflow-gpu:latest","pytorch/pytorch:3.24","python/python-mini:3.10"]
     docker_image = ""
     datasets = list(dict())
+    encrypt = True
 
     """
     Get the type of protocol that is used
@@ -116,7 +117,6 @@ class BacalhauProtocol(DeProtocol):
     """
     @classmethod
     def add_docker_image(self,value):
-        
         self.docker_images.append(value)
 
     """
@@ -168,6 +168,24 @@ class BacalhauProtocol(DeProtocol):
     @classmethod
     def remove_dataset(self,type,value):
         self.datasets.remove({type:value})  
+
+    """
+    Encrypt datasets before sending
+    @oaram self:
+    @param boolean: true = encrypt, false = send as is
+    """
+    @classmethod
+    def encrypt_datasets(self,encrypt:bool):
+        self.encrypt=encrypt
+
+    """
+    Are datasets encrypted before sending
+    @oaram self:
+    @return boolean: true = encrypt, false = send as is
+    """
+    @classmethod
+    def are_datasets_encrypted(self)->bool:
+        return self.encrypt   
 
     """
     Submit a job to the specified protocol with optional params 

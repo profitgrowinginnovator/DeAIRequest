@@ -1,6 +1,6 @@
 [project]
 name = "deairequest"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Maarten Ectors", email="maarten@0011.ai" }
 ]
@@ -24,14 +24,3 @@ requires = [
 ]
 
 build-backend = "setuptools.build_meta"
-
-
-
-#[tool.setuptools]
-#include-package-data = true
-
-#[tool.setuptools.packages.find]
-#where = ["deairequest"]
-
-#[tool.setuptools.package-data]
-#"*" = ["*.svg"]

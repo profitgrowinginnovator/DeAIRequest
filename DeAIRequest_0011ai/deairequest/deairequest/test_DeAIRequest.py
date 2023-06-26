@@ -37,6 +37,10 @@ class TestDeAIRequest(unittest.TestCase):
         bp.add_dataset(bp.get_ipfs_data_type(),"ipfs1")
         compareds=[{"url":"url1"},{"file":"file1"},{"directory":"directory1"},{"ipfs":"ipfs1"}]
         self.assertEqual(bp.get_datasets(),compareds,"Add dataset not working")
+        bp.encrypt_datasets(True)
+        self.assertEqual(bp.are_datasets_encrypted(),True,"Encryption not workng")
+        bp.encrypt_datasets(False)
+        self.assertEqual(bp.are_datasets_encrypted(),False,"Encryption not workng")
         bp.remove_dataset(bp.get_ipfs_data_type(),"ipfs1")
         compareds=[{"url":"url1"},{"file":"file1"},{"directory":"directory1"}]
         self.assertEqual(bp.get_datasets(),compareds,"Remove dataset not working")
