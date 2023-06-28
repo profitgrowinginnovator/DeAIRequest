@@ -42,6 +42,7 @@ class TestDeAIRequest(unittest.TestCase):
         
         job = bp.submit_job(Path("."))
         self.assertEqual(job,"123","Job ID should be 123")   
+        self.assertEqual(bp.get_state("123"),"Completed","Job sate not working.")
         logs = bp.get_logs(job) 
         self.assertNotEmpty(logs)
         result = bp.get_results(job,Path("."))
@@ -64,7 +65,7 @@ class TestDeAIRequest(unittest.TestCase):
         with self.assertRaises(Exception) as context:
             ep.get_results("123",Path("."))
         self.assertTrue('job not supported', context.exception)
-
+        self.assertEqual(ep.get_state("123"),"Error","Get state is not working")
 
 if __name__ == '__main__':
     unittest.main()

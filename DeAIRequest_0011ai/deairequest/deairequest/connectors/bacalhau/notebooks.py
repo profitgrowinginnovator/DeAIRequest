@@ -1,9 +1,9 @@
-from connectors.bacalhau.code import get_magic_lines, remove_magic_lines, get_installable_packages
-from connectors.bacalhau.step import Step
+from deairequest.connectors.bacalhau.code import get_magic_lines, remove_magic_lines, get_installable_packages
+from deairequest.connectors.bacalhau.step import Step
 from typing import Tuple, List
 from io import BufferedReader
 from pathlib import Path
-import connectors.bacalhau.backends as backends
+import deairequest.connectors.bacalhau.backends as backends
 import jupytext
 import logging
 
@@ -12,10 +12,9 @@ def compile(notebook_path: Path, target: str) -> Tuple[Path, str]:
     notebook = read_notebook(notebook_path)
     all_steps = get_steps(notebook)
 
-    return backends.render(
+    return backends.brender(
         target=target,
-        steps=all_steps,
-        config=config
+        steps=all_steps
     )
 
 
@@ -110,7 +109,7 @@ def get_steps(notebook: dict) -> dict:
     return steps
 
 
-def get_sorted_list_of_steps(notebook: dict, config: SameConfig) -> list:
+def get_sorted_list_of_steps(notebook: dict, config: dict) -> list:
     """
     Given a notebook (as a dict), get a list of Step objects, sorted by their
     index in the notebook.

@@ -193,6 +193,16 @@ class BacalhauProtocol(DeProtocol):
     def get_logs(self, job):
         return requests.get('https://httpbin.org/stream/20', stream=True)
     
+    """
+    Get the job results 
+    @oaram self:
+    @param job: the job id
+    @preturn the state of the job, either InProgress, Completed or Error
+    @raises: exception if the job id is not known or the output path is not accessible
+    """
+    @classmethod
+    def get_state(self, job)->str:
+        return "Completed"
 
     """
     Get the job results 

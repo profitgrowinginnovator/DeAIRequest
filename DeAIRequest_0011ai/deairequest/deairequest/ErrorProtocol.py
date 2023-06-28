@@ -56,3 +56,7 @@ class ErrorProtocol(DeProtocol):
     @classmethod
     def get_results(self, job, output:Path):
         raise Exception("job not supported")
+    
+    @classmethod
+    def get_state(self, job)->str:
+        return "Error"

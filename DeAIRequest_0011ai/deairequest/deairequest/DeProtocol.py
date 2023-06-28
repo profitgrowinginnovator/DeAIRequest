@@ -32,6 +32,17 @@ class DeProtocol(ABC):
     Get the job results 
     @oaram self:
     @param job: the job id
+    @preturn the state of the job, either InProgress, Completed or Error
+    @raises: exception if the job id is not known or the output path is not accessible
+    """
+    @abstractmethod
+    def get_state(self, job)->str:
+        pass
+
+    """
+    Get the job results 
+    @oaram self:
+    @param job: the job id
     @param output Path: the directory where the output can be written
     @raises: exception if the job id is not known or the output path is not accessible
     """

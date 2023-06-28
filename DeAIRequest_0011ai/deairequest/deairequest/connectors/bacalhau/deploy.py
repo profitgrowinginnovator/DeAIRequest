@@ -4,12 +4,14 @@ from bacalhau_apiclient.models.storage_spec import StorageSpec
 from bacalhau_apiclient.models.spec import Spec
 from bacalhau_apiclient.models.job_spec_language import JobSpecLanguage
 from bacalhau_apiclient.models.job_spec_docker import JobSpecDocker
+from bacalhau_apiclient.models.resource_usage_config import ResourceUsageConfig
+from bacalhau_apiclient.models.publisher_spec import PublisherSpec
 from bacalhau_apiclient.models.deal import Deal
 from pathlib import Path
 import os
 import base64
 import tarfile
-import ipfsapi
+import ipfshttpclient
 
 
 
@@ -18,7 +20,7 @@ def deploy(base_path: Path, root_file: str, config: dict):
     # The 'initiator' function expects a JSON blob encoding notebook steps:
     #with (base_path / root_file).open("r") as reader:
     #    body = json.load(reader)
-    print(f"code:'{os.path.join(base_path,root_file)}")
+    print(f"code:'{os.path.join(base_path,'code.py')}")
 
     # Initiate execution against the backend functionapp:
     job = create_job(config, base_path, root_file)
@@ -30,7 +32,7 @@ def deploy(base_path: Path, root_file: str, config: dict):
 
     # Result is a JSON blob describing the 'job' execution context:
     #data = json.loads(res.to_str())
-    print(f"Successfully started an execution of notebook '{config.notebook.name}', visit the following link for results:\n\t{res.job.metadata.id}")
+    print(f"Successfully started an execution of notebook '{config.get('notebook').get('name')}', visit the following link for results:\n\t{res.job.metadata.id}")
 
     return res.job.metadata.id
     
@@ -74,11 +76,14 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
         Spec=Spec(
             engine="Docker",
             verifier="Noop",
-            publisher="Estuary",
+            publisher_spec=PublisherSpec(type="ipfs"),
             docker=JobSpecDocker(
-                image=config.environments.default.image_tag,
+                image=config.get('environments').get('default').get('image_tag'),
                 entrypoint=["pip3","install","--no-index", "--find-links","/wheels","-r","/inputs/inputs/requirements.txt"],#,";","python3","/inputs/inputs/code.py"],
                 working_directory="/inputs",
+            ),
+            resources=ResourceUsageConfig(
+                gpu="0",
             ),
             inputs=[
                 StorageSpec(
@@ -94,9 +99,15 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
                 ),
 
             ],
+            outputs=[
+                StorageSpec(
+                    storage_source="IPFS",
+                    name="outputs",
+                    path="/outputs",
+                )
+            ],
             language=JobSpecLanguage(job_context=None),
             wasm=None,
-            resources=None,
             timeout=1800,
             deal=Deal(concurrency=1, confidence=0, min_bids=0),
             do_not_track=False,
@@ -106,18 +117,19 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
 
 def _download_wheels(dir: Path, reqs: Path) -> str:
     wheelsdir=os.path.join(dir,"wheels")
-    print(f"wheels:{wheelsdir} {reqs}")
-    api = ipfsapi.Client('127.0.0.1', 5001)
+    #print(f"wheels:{wheelsdir} {reqs}")
+    api = ipfshttpclient.connect() #.Client('127.0.0.1', 5001)
     return api.add(wheelsdir)
     
 
 def _encode_tar_gzip(dir: Path, name: str) -> str:
     """Encodes the given data as an urlsafe base64 string."""
     inputsdir=os.path.join(dir,name)
+    #print(f"tar:{dir} {name}")
     tarname=os.path.join(dir,name+".tar.gz")
     with tarfile.open(tarname, "w:gz") as tar:
         tar.add(inputsdir, arcname=os.path.basename(inputsdir))
-        print(f"dir:{inputsdir}")
+        #print(f"dir:{inputsdir}")
     tar.close
     code = open(tarname, "rb")
     code_read = code.read()

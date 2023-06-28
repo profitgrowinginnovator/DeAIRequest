@@ -33,6 +33,10 @@ docopt = "^0.6.2"
 yarg = "^0.1.9"
 pipreqs = "^0.4.11"
 python-pachyderm = "^7.3.1"
+bacalhau_apiclient = "^1.0.3"
+bacalhau_sdk = "^1.0.3"
+ipfshttpclient = "^0.8.0a2"
+pipreqs = "^0.4.13"
 
 
 # Dev

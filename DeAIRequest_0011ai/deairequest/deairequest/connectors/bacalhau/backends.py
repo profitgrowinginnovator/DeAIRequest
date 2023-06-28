@@ -1,7 +1,6 @@
 #from bacalhauconnector.data.config import SameConfig
-from connectors.bacalhau.step import Step
-from connectors.bacalhau.deploy import deploy
-from connectors.bacalhau.render import render
+from deairequest.connectors.bacalhau.deploy import deploy
+from deairequest.connectors.bacalhau.render import render
 from pathlib import Path
 from typing import Tuple
 #import bacalhauconnector.ops.bacalhau as bacalhau
@@ -9,7 +8,7 @@ from typing import Tuple
 import tempfile
 
 
-def render(target: str, steps: list, compile_path: str = None) -> Tuple[Path, str]:
+def brender(target: str, steps: list, compile_path: str = None) -> Tuple[Path, str]:
     if compile_path is None:
         compile_path = str(tempfile.mkdtemp())
 
@@ -17,16 +16,9 @@ def render(target: str, steps: list, compile_path: str = None) -> Tuple[Path, st
     return (compile_path, root_module_name)
 
 
-def deploy(target: str, base_path: Path, root_file: str, config: SameConfig):
-    target_deployers = {
-        "bacalhau": bacalhau.deploy,
-    }
-
-    deploy_function = target_deployers.get(target, None)
-    if deploy_function is None:
-        raise ValueError(f"Unknown backend: {target}")
+def bdeploy(base_path: Path, root_file: str, config: dict):
 
     #click.echo(f"Files persisted in: {base_path}")
-    deploy_return = deploy_function(base_path, root_file, config)
+    deploy_return = deploy(base_path, root_file, config)
 
     return deploy_return
