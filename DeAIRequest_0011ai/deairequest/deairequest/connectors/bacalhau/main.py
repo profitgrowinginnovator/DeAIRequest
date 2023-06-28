@@ -1,23 +1,23 @@
 from deairequest.connectors.bacalhau import notebooks, backends
 import tempfile
 import os
+from pathlib import Path
 
-def main():
+def main(notebook:Path, name:str, imagetag:str)->str:
 
     target=tempfile.mkdtemp()
-    notebook_path=os.path.join("/Users/maarten/Downloads/example-bs4.ipynb")
     config = dict({
         'notebook':{
-            'name': "test"
+            'name': name
         },
         'environments':{
             'default':{
-                'image_tag': 'python'
+                'image_tag': imagetag
             }
         }
     })
-    base_path, root_file = notebooks.compile(notebook_path, target)
-    backends.bdeploy(base_path, root_file, config)
+    base_path, root_file = notebooks.compile(notebook, target)
+    return backends.bdeploy(base_path, root_file, config)
 
 if __name__ == "__main__":
     main()

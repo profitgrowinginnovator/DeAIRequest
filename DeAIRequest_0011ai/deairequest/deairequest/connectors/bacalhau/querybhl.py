@@ -13,6 +13,7 @@ import time
 import ipfshttpclient
 import re
 
+# returns the python version and a list with packages
 def query(docker: str):
     data = dict(
         APIVersion='V1beta1',
@@ -52,11 +53,13 @@ def query(docker: str):
         state=states(job_id=id).state.state
         while state == 'InProgress':
             state=states(job_id=id).state.state
-            print(state)
+            print('.')
             time.sleep(0.25)
         
         # get the result of the Bacalhau job
         resultout=results(job_id=id)
+        if state=="Error":
+            sys.exit(resultout)
         cid=resultout.results[0].data.cid
         # download the CID of the outputs directory
         api = ipfshttpclient.connect()
@@ -65,11 +68,17 @@ def query(docker: str):
         stderrcid=result.as_json().get("Objects")[0].get("Links")[3].get("Hash")
         # first line contains Python 3.11.2 [or other version], rest of the lines are the requirements.txt of the Docker image
         response=api.cat(stderrcid).decode('utf-8')
+        api.close()
         #python=response.partition('\n')[0]
         x=re.split("Python (3.[0-9][0-9]*).[0-9]+",response.partition('\n')[0])
         pythonversion=x[1]
-        reqtxt=response.rpartition('\n')[2]
-        print(reqtxt)
+        reqtxt=response.split('\n')[1:]
+        reqs:list = []
+        for req in reqtxt:
+            if req != "":
+                y=re.split("([a-z-?]+)",req)
+                reqs.append(y[1])
+        return pythonversion, reqs
 
     except Exception as err:
         raise RuntimeError(f"The 'bacalhau' backend gave an error: {err}")

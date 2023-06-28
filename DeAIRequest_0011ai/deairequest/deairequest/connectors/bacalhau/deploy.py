@@ -117,9 +117,10 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
 
 def _download_wheels(dir: Path, reqs: Path) -> str:
     wheelsdir=os.path.join(dir,"wheels")
-    #print(f"wheels:{wheelsdir} {reqs}")
-    api = ipfshttpclient.connect() #.Client('127.0.0.1', 5001)
-    return api.add(wheelsdir)
+    api = ipfshttpclient.connect()
+    cid = api.add(wheelsdir)
+    api.close()
+    return cid
     
 
 def _encode_tar_gzip(dir: Path, name: str) -> str:
@@ -133,6 +134,8 @@ def _encode_tar_gzip(dir: Path, name: str) -> str:
     tar.close
     code = open(tarname, "rb")
     code_read = code.read()
-    return "data:application/gzip;base64,"+base64.b64encode(code_read).decode("utf-8")
+    encoded = "data:application/gzip;base64,"+base64.b64encode(code_read).decode("utf-8")
+    code.close()
+    return encoded
 
 

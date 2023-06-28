@@ -3,12 +3,15 @@ import requests
 from pathlib import Path
 import os
 from .DeProtocol import DeProtocol
+import deairequest.connectors.bacalhau.querybhl as query
+import deairequest.connectors.bacalhau.main as bcljob
 
 """
 The Bacalhau.org protocol
 """
 class BacalhauProtocol(DeProtocol):
-    docker_images = ["tensorflow/tensorflow-gpu:latest","pytorch/pytorch:3.24","python/python-mini:3.10"]
+    docker_images = []
+    docker_images_pyv = {}
     docker_image = ""
     datasets = list(dict())
     encrypt = True
@@ -97,6 +100,14 @@ class BacalhauProtocol(DeProtocol):
     """
     @classmethod
     def get_docker_images(self)->list:
+        path = os.path.abspath(os.path.dirname(__file__))
+        f = open(os.path.join(path,"docker_images.pv"),"r")
+        images=f.readlines()
+        f.close()
+        for image in images:
+            v=image.split("*")
+            self.docker_images_pyv[v[0]] = v[1] 
+        self.docker_images = list(self.docker_images_pyv.keys())
         return self.docker_images
     
     """
@@ -117,6 +128,15 @@ class BacalhauProtocol(DeProtocol):
     """
     @classmethod
     def add_docker_image(self,value):
+        pythonv, reqs = query.query(value)
+        path = os.path.abspath(os.path.dirname(__file__))
+        with open(os.path.join(path,"docker_images.pv"), 'a') as f:
+            f.write('%s*%s\n' % (value,pythonv))
+        f.close()
+        name = value.replace("/","-")
+        file = open(name+".req",'w')
+        file.writelines(reqs)
+        file.close()
         self.docker_images.append(value)
 
     """
@@ -127,6 +147,8 @@ class BacalhauProtocol(DeProtocol):
     """
     @classmethod
     def set_docker_image(self,value):
+        if value not in self.docker_images:
+            self.add_docker_image(value)
         self.docker_image = value
 
     """
@@ -137,7 +159,16 @@ class BacalhauProtocol(DeProtocol):
     """
     @classmethod
     def remove_docker_image(self,value):
+        path = os.path.abspath(os.path.dirname(__file__))
         self.docker_images.remove(value)
+        self.docker_images_pyv.pop(value)
+        if self.docker_image == value:
+            self.docker_image=''
+        with open(os.path.join(path,"docker_images.pv"), 'w') as f:
+            for x in self.docker_images_pyv:
+                f.write('%s*%s' % (x,self.docker_images_pyv[x]))
+        f.close()
+
 
     """
     Add a dataset
@@ -180,7 +211,9 @@ class BacalhauProtocol(DeProtocol):
     """
     @classmethod
     def submit_job(self, ipynb:Path, params="")->str:
-        return "123"
+        name=os.path.basename(ipynb)
+        name=name.replace('.ipynb','')
+        return bcljob.main(ipynb,name,self.get_docker_image())
     
     """
     Get the logs from the job
@@ -191,7 +224,7 @@ class BacalhauProtocol(DeProtocol):
     """
     @classmethod
     def get_logs(self, job):
-        return requests.get('https://httpbin.org/stream/20', stream=True)
+        return requests.get('https://api.github.com/users/mralexgray/repos', stream=True)
     
     """
     Get the job results 
@@ -213,6 +246,6 @@ class BacalhauProtocol(DeProtocol):
     """
     @classmethod
     def get_results(self, job, output:Path):
-        return requests.get('https://httpbin.org/stream/20', stream=True)
+        return requests.get('https://api.github.com/users/mralexgray/repos', stream=True)
     
 
