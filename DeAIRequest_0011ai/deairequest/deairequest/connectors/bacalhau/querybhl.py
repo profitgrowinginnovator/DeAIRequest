@@ -53,7 +53,7 @@ def query(docker: str):
         state=states(job_id=id).state.state
         while state == 'InProgress':
             state=states(job_id=id).state.state
-            print('.')
+            print('.',end='')
             time.sleep(0.25)
         
         # get the result of the Bacalhau job

@@ -8,13 +8,14 @@ import jupytext
 import logging
 
 
-def compile(notebook_path: Path, target: str) -> Tuple[Path, str]:
+def compile(notebook_path: Path, target: str, config: dict) -> Tuple[Path, str]:
     notebook = read_notebook(notebook_path)
     all_steps = get_steps(notebook)
 
     return backends.brender(
         target=target,
-        steps=all_steps
+        steps=all_steps,
+        config=config
     )
 
 

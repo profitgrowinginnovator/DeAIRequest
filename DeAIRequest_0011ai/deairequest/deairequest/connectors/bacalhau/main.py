@@ -3,7 +3,7 @@ import tempfile
 import os
 from pathlib import Path
 
-def main(notebook:Path, name:str, imagetag:str)->str:
+def main(notebook:Path, name:str, imagetag:str, pythonversion:str)->str:
 
     target=tempfile.mkdtemp()
     config = dict({
@@ -12,11 +12,12 @@ def main(notebook:Path, name:str, imagetag:str)->str:
         },
         'environments':{
             'default':{
-                'image_tag': imagetag
+                'image_tag': imagetag,
+                'python': pythonversion
             }
         }
     })
-    base_path, root_file = notebooks.compile(notebook, target)
+    base_path, root_file = notebooks.compile(notebook, target, config)
     return backends.bdeploy(base_path, root_file, config)
 
 if __name__ == "__main__":

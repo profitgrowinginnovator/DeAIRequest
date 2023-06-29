@@ -79,7 +79,7 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
             publisher_spec=PublisherSpec(type="ipfs"),
             docker=JobSpecDocker(
                 image=config.get('environments').get('default').get('image_tag'),
-                entrypoint=["pip3","install","--no-index", "--find-links","/wheels","-r","/inputs/inputs/requirements.txt"],#,";","python3","/inputs/inputs/code.py"],
+                entrypoint=["/bin/sh","-c","pip3 install --no-index --find-links /wheels -r /inputs/inputs/requirements.txt;python3 /inputs/inputs/code.py"],#,";","python3","/inputs/inputs/code.py"],
                 working_directory="/inputs",
             ),
             resources=ResourceUsageConfig(
@@ -117,9 +117,11 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
 
 def _download_wheels(dir: Path, reqs: Path) -> str:
     wheelsdir=os.path.join(dir,"wheels")
-    api = ipfshttpclient.connect()
-    cid = api.add(wheelsdir)
-    api.close()
+    try:
+        api = ipfshttpclient.connect()
+        cid = api.add(wheelsdir)
+    finally:
+        api.close()
     return cid
     
 
@@ -128,14 +130,18 @@ def _encode_tar_gzip(dir: Path, name: str) -> str:
     inputsdir=os.path.join(dir,name)
     #print(f"tar:{dir} {name}")
     tarname=os.path.join(dir,name+".tar.gz")
-    with tarfile.open(tarname, "w:gz") as tar:
-        tar.add(inputsdir, arcname=os.path.basename(inputsdir))
-        #print(f"dir:{inputsdir}")
-    tar.close
-    code = open(tarname, "rb")
-    code_read = code.read()
-    encoded = "data:application/gzip;base64,"+base64.b64encode(code_read).decode("utf-8")
-    code.close()
+    try:
+        with tarfile.open(tarname, "w:gz") as tar:
+            tar.add(inputsdir, arcname=os.path.basename(inputsdir))
+            #print(f"dir:{inputsdir}")
+    finally:
+        tar.close
+    try:
+        code = open(tarname, "rb")
+        code_read = code.read()
+        encoded = "data:application/gzip;base64,"+base64.b64encode(code_read).decode("utf-8")
+    finally:
+        code.close()
     return encoded
 
 

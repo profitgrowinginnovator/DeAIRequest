@@ -21,7 +21,7 @@ class TestDeAIRequest(unittest.TestCase):
         path = os.path.abspath(os.path.dirname(__file__))
         os.remove(os.path.join(path,"docker_images.pv")) 
         if os.path.isfile(os.path.join(path,"docker_images.pv.bak")):
-            os.rename(os.path.join(path,"docker_images.pv.bak","docker_images.pv"))
+            os.rename(os.path.join(path,"docker_images.pv.bak"),os.path.join(path,"docker_images.pv"))
         
 
     def test_submit_job(self):

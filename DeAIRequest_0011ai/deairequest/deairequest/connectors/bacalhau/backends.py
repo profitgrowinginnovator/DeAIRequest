@@ -8,11 +8,11 @@ from typing import Tuple
 import tempfile
 
 
-def brender(target: str, steps: list, compile_path: str = None) -> Tuple[Path, str]:
+def brender(target: str, steps: list, config: dict, compile_path: str = None) -> Tuple[Path, str]:
     if compile_path is None:
         compile_path = str(tempfile.mkdtemp())
 
-    compile_path, root_module_name = render(compile_path, steps)
+    compile_path, root_module_name = render(target, steps, config, compile_path)
     return (compile_path, root_module_name)
 
 

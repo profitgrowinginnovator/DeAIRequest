@@ -101,9 +101,11 @@ class BacalhauProtocol(DeProtocol):
     @classmethod
     def get_docker_images(self)->list:
         path = os.path.abspath(os.path.dirname(__file__))
-        f = open(os.path.join(path,"docker_images.pv"),"r")
-        images=f.readlines()
-        f.close()
+        try:
+            f = open(os.path.join(path,"docker_images.pv"),"r")
+            images=f.readlines()
+        finally:
+            f.close()
         for image in images:
             v=image.split("*")
             self.docker_images_pyv[v[0]] = v[1] 
@@ -130,14 +132,21 @@ class BacalhauProtocol(DeProtocol):
     def add_docker_image(self,value):
         pythonv, reqs = query.query(value)
         path = os.path.abspath(os.path.dirname(__file__))
-        with open(os.path.join(path,"docker_images.pv"), 'a') as f:
-            f.write('%s*%s\n' % (value,pythonv))
-        f.close()
+        try:
+            with open(os.path.join(path,"docker_images.pv"), 'a') as f:
+                f.write('%s*%s\n' % (value,pythonv))
+        finally:
+            f.close()
         name = value.replace("/","-")
-        file = open(name+".req",'w')
-        file.writelines(reqs)
-        file.close()
+        print(name)
+        try:
+            file = open(os.path.join(path,name+".req"),'w')
+            for req in reqs:
+                file.write('%s\n' % (req))
+        finally:
+            file.close()
         self.docker_images.append(value)
+        self.docker_images_pyv[value]=pythonv
 
     """
     Set the docker image to use for this job
@@ -164,10 +173,12 @@ class BacalhauProtocol(DeProtocol):
         self.docker_images_pyv.pop(value)
         if self.docker_image == value:
             self.docker_image=''
-        with open(os.path.join(path,"docker_images.pv"), 'w') as f:
-            for x in self.docker_images_pyv:
-                f.write('%s*%s' % (x,self.docker_images_pyv[x]))
-        f.close()
+        try:
+            with open(os.path.join(path,"docker_images.pv"), 'w') as f:
+                for x in self.docker_images_pyv:
+                    f.write('%s*%s' % (x,self.docker_images_pyv[x]))
+        finally:
+            f.close()
 
 
     """
@@ -213,7 +224,8 @@ class BacalhauProtocol(DeProtocol):
     def submit_job(self, ipynb:Path, params="")->str:
         name=os.path.basename(ipynb)
         name=name.replace('.ipynb','')
-        return bcljob.main(ipynb,name,self.get_docker_image())
+        pythonversion=self.docker_images_pyv[self.get_docker_image()]
+        return bcljob.main(ipynb,name,self.get_docker_image(),pythonversion)
     
     """
     Get the logs from the job
