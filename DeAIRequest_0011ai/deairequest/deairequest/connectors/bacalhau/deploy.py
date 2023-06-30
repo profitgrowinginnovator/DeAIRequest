@@ -12,6 +12,7 @@ import os
 import base64
 import tarfile
 import ipfshttpclient
+from os.path import exists
 
 
 
@@ -20,11 +21,11 @@ def deploy(base_path: Path, root_file: str, config: dict):
     # The 'initiator' function expects a JSON blob encoding notebook steps:
     #with (base_path / root_file).open("r") as reader:
     #    body = json.load(reader)
-    print(f"code:'{os.path.join(base_path,'code.py')}")
+    #print(f"code:'{os.path.join(base_path,'code.py')}")
 
     # Initiate execution against the backend functionapp:
     job = create_job(config, base_path, root_file)
-    print(f"job:'{job}")
+    #print(f"job:'{job}")
     try:
         res = submit(job)
     except Exception as err:
@@ -32,7 +33,7 @@ def deploy(base_path: Path, root_file: str, config: dict):
 
     # Result is a JSON blob describing the 'job' execution context:
     #data = json.loads(res.to_str())
-    print(f"Successfully started an execution of notebook '{config.get('notebook').get('name')}', visit the following link for results:\n\t{res.job.metadata.id}")
+    #print(f"Successfully started an execution of notebook '{config.get('notebook').get('name')}', visit the following link for results:\n\t{res.job.metadata.id}")
 
     return res.job.metadata.id
     
@@ -62,57 +63,98 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
     #    print(f'pwd:{config.get("runtime_options").get("docker_password")}')
         #client.push.
     requirements=os.path.join(base_path,"inputs/requirements.txt")
-    cids = _download_wheels(base_path,requirements)
-    cid = ""
-    # get the directory CID
-    for x in cids:
-        if x['Name'] == "wheels":
-            cid = x['Hash']
-    print(f"cid:{cid}")
+    if exists(requirements):
+        cids = _download_wheels(base_path,requirements)
+        cid = ""
+        # get the directory CID
+        for x in cids:
+            if x['Name'] == "wheels":
+                cid = x['Hash']
+        #print(f"cid:{cid}")
 
-    data = dict(
-        APIVersion='V1beta1',
-        ClientID=get_client_id(),
-        Spec=Spec(
-            engine="Docker",
-            verifier="Noop",
-            publisher_spec=PublisherSpec(type="ipfs"),
-            docker=JobSpecDocker(
-                image=config.get('environments').get('default').get('image_tag'),
-                entrypoint=["/bin/sh","-c","pip3 install --no-index --find-links /wheels -r /inputs/inputs/requirements.txt;python3 /inputs/inputs/code.py"],#,";","python3","/inputs/inputs/code.py"],
-                working_directory="/inputs",
-            ),
-            resources=ResourceUsageConfig(
-                gpu="0",
-            ),
-            inputs=[
-                StorageSpec(
-                    storage_source="IPFS",
-                    path="/wheels",
-                    cid=cid, 
+        data = dict(
+            APIVersion='V1beta1',
+            ClientID=get_client_id(),
+            Spec=Spec(
+                engine="Docker",
+                verifier="Noop",
+                publisher_spec=PublisherSpec(type="ipfs"),
+                docker=JobSpecDocker(
+                    image=config.get('environments').get('default').get('image_tag'),
+                    entrypoint=["/bin/sh","-c","pip3 install --no-index --find-links /wheels -r /inputs/inputs/requirements.txt;python3 /inputs/inputs/code.py"],#,";","python3","/inputs/inputs/code.py"],
+                    working_directory="/inputs",
                 ),
-                StorageSpec(
-                    storage_source="Inline",
-                    path="/inputs",
-                    url=_encode_tar_gzip(base_path,"inputs"),
- 
+                resources=ResourceUsageConfig(
+                    gpu="0",
                 ),
+                inputs=[
+                    StorageSpec(
+                        storage_source="IPFS",
+                        path="/wheels",
+                        cid=cid, 
+                    ),
+                    StorageSpec(
+                        storage_source="Inline",
+                        path="/inputs",
+                        url=_encode_tar_gzip(base_path,"inputs"),
+    
+                    ),
 
-            ],
-            outputs=[
-                StorageSpec(
-                    storage_source="IPFS",
-                    name="outputs",
-                    path="/outputs",
-                )
-            ],
-            language=JobSpecLanguage(job_context=None),
-            wasm=None,
-            timeout=1800,
-            deal=Deal(concurrency=1, confidence=0, min_bids=0),
-            do_not_track=False,
-        ),
-    )
+                ],
+                outputs=[
+                    StorageSpec(
+                        storage_source="IPFS",
+                        name="outputs",
+                        path="/outputs",
+                    )
+                ],
+                language=JobSpecLanguage(job_context=None),
+                wasm=None,
+                timeout=1800,
+                deal=Deal(concurrency=1, confidence=0, min_bids=0),
+                do_not_track=False,
+            ),
+        )
+    else:
+        #nothing to install
+        data = dict(
+            APIVersion='V1beta1',
+            ClientID=get_client_id(),
+            Spec=Spec(
+                engine="Docker",
+                verifier="Noop",
+                publisher_spec=PublisherSpec(type="ipfs"),
+                docker=JobSpecDocker(
+                    image=config.get('environments').get('default').get('image_tag'),
+                    entrypoint=["/bin/sh","-c","python3 /inputs/inputs/code.py"],
+                    working_directory="/inputs",
+                ),
+                resources=ResourceUsageConfig(
+                    gpu="0",
+                ),
+                inputs=[
+                    StorageSpec(
+                        storage_source="Inline",
+                        path="/inputs",
+                        url=_encode_tar_gzip(base_path,"inputs"),
+    
+                    ),
+
+                ],
+                outputs=[
+                    StorageSpec(
+                        storage_source="IPFS",
+                        name="outputs",
+                        path="/outputs",
+                    )
+                ],
+                language=JobSpecLanguage(job_context=None),
+                wasm=None,
+                timeout=1800,
+                deal=Deal(concurrency=1, confidence=0, min_bids=0),
+                do_not_track=False,
+            ),
+        )
     return data
 
 def _download_wheels(dir: Path, reqs: Path) -> str:

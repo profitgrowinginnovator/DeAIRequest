@@ -5,6 +5,9 @@ import os
 from .DeProtocol import DeProtocol
 import deairequest.connectors.bacalhau.querybhl as query
 import deairequest.connectors.bacalhau.main as bcljob
+from bacalhau_sdk.api import results, states, events
+import ipfshttpclient
+from os.path import exists
 
 """
 The Bacalhau.org protocol
@@ -236,7 +239,7 @@ class BacalhauProtocol(DeProtocol):
     """
     @classmethod
     def get_logs(self, job):
-        return requests.get('https://api.github.com/users/mralexgray/repos', stream=True)
+        return events(job_id=job)
     
     """
     Get the job results 
@@ -247,7 +250,7 @@ class BacalhauProtocol(DeProtocol):
     """
     @classmethod
     def get_state(self, job)->str:
-        return "Completed"
+        return states(job_id=job).state.state
 
     """
     Get the job results 
@@ -258,6 +261,15 @@ class BacalhauProtocol(DeProtocol):
     """
     @classmethod
     def get_results(self, job, output:Path):
-        return requests.get('https://api.github.com/users/mralexgray/repos', stream=True)
-    
+        # get the result of the Bacalhau job
+        resultout=results(job_id=job)
+        cid=resultout.results[0].data.cid
+        try:
+            api = ipfshttpclient.connect()
+            if not exists(output):
+                os.mkdir(output)
+            api.get(cid,output)
+        finally:
+            api.close()
 
+    

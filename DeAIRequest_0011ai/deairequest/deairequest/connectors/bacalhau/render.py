@@ -5,6 +5,7 @@ from pipreqs import pipreqs
 #import filecmp
 import subprocess
 import sys
+#import platform
 #import logging
 import re
 
@@ -21,6 +22,17 @@ def render(target: str, steps: list, config: dict, compile_path: str = None) -> 
 
     req=os.path.join(inputspath,"requirements.txt")
     
+    # Activate virtual environment
+    #try:
+    #    import virtualenv
+    #except ModuleNotFoundError:
+    #    subprocess.check_call([sys.executable, "-m", "pip install virtualenv"])
+    #subprocess.check_call([sys.executable, "-m", "virtualenv", "bclenv"])
+    #if platform.system() == "Windows":
+    #    subprocess.check_call([".\bclenv\Scripts\activate"])
+    #else:
+    #    subprocess.check_call(["/bin/sh","-c", "source bclenv/bin/activate"])
+
     # Create a requirements.txt file
     pipreqs.init({'<path>': inputspath, '--savepath': None, '--print': False,
                       '--use-local': None, '--force': True, '--proxy':None, '--pypi-server':None,
@@ -39,30 +51,45 @@ def render(target: str, steps: list, config: dict, compile_path: str = None) -> 
         f.close()
     try:
         with open(req) as f2:
-            toinstall = f2.read().splitlines()
+            rforinstall = f2.read().splitlines()
     finally:
         f2.close()
-    for install in toinstall:
-        y=re.split("([a-z-?]+)",install)
-        if y[1] in lines:
-            toinstall.remove(install)
-    try:
-        with open(req,'w') as f3:
-            for install in toinstall:
-                print(install)
-                f3.write(install)
-                f3.write("\n")
-    finally:
-        f3.close()
-    print(req)
 
-    # Download the remaining packages
-    wheelsdir=os.path.join(target,"wheels")
-    pythonversion=config.get('environments').get('default').get('python')
-    for install in toinstall:
+    toinstall={}
+    for install in rforinstall:
+        y=re.split("([A-z-?]+)",install)
+        if y[1] not in lines:
+            toinstall.add(install)
+
+    if len(toinstall) > 0:
         try:
-            subprocess.check_call([sys.executable, "-m", "pip", "download", "--python-version", pythonversion, "--platform", "linux_x86_64", "-d",wheelsdir,"--only-binary=:all:",install])        
-        except Exception as excep:
-            subprocess.check_call([sys.executable, "-m", "pip", "download", "--python-version", pythonversion, "--platform", "linux_x86_64", "-d",wheelsdir,"--no-deps",install])
-        
+            with open(req,'w') as f3:
+                for install in toinstall:
+                    f3.write(install)
+                    f3.write("\n")
+        finally:
+            f3.close()
+
+        # Download the remaining packages
+        wheelsdir=os.path.join(target,"wheels")
+        pythonversion=config.get('environments').get('default').get('python')
+        for install in toinstall:
+            try:
+                #download specific version
+                subprocess.check_call([sys.executable, "-m", "pip", "download", "--python-version", pythonversion, "--platform", "linux_x86_64", "-d",wheelsdir,"--only-binary=:all:",install])        
+            except Exception as excep:
+                try:
+                    #download any version
+                    y=re.split("([A-z-?]+)",install)
+                    subprocess.check_call([sys.executable, "-m", "pip", "download", "--python-version", pythonversion, "--platform", "linux_x86_64", "-d",wheelsdir,"--only-binary=:all:",y[1]])        
+                except Exception as excep:
+                    # fail if neither works
+                    raise Exception(f"Sorry but we cannot download the package {install}, please use a docker image that includes this package")
+    else:
+        # Nothing to install
+        os.remove(req)
+       
+    # Deactivate the venv
+    #subprocess.check_call(["deactivate"])
+
     return (target, inputs)

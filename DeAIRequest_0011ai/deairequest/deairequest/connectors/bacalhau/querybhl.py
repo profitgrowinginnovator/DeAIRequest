@@ -1,4 +1,4 @@
-from bacalhau_sdk.api import submit, results, events, states
+from bacalhau_sdk.api import submit, results, states
 from bacalhau_sdk.config import get_client_id
 from bacalhau_apiclient.models.storage_spec import StorageSpec
 from bacalhau_apiclient.models.spec import Spec
@@ -24,7 +24,7 @@ def query(docker: str):
             publisher_spec=PublisherSpec(type="ipfs"),
             docker=JobSpecDocker(
                 image=docker,
-                entrypoint=["/bin/sh","-c","python --version;pip freeze"],
+                entrypoint=["/bin/sh","-c","python3 --version;pip3 freeze"],
                 working_directory="/inputs",
             ),
             resources=ResourceUsageConfig(
@@ -53,22 +53,24 @@ def query(docker: str):
         state=states(job_id=id).state.state
         while state == 'InProgress':
             state=states(job_id=id).state.state
-            print('.',end='')
+            #print('.',end='')
             time.sleep(0.25)
+        if state=="Error":
+            raise Exception(f"Sorry but we cannot download and inspect the docker image: {docker}, please use a different docker image.")
         
         # get the result of the Bacalhau job
         resultout=results(job_id=id)
-        if state=="Error":
-            sys.exit(resultout)
         cid=resultout.results[0].data.cid
         # download the CID of the outputs directory
-        api = ipfshttpclient.connect()
-        result=api.ls(cid)
-        # get the CID of the stdout file and gets its content
-        stderrcid=result.as_json().get("Objects")[0].get("Links")[3].get("Hash")
-        # first line contains Python 3.11.2 [or other version], rest of the lines are the requirements.txt of the Docker image
-        response=api.cat(stderrcid).decode('utf-8')
-        api.close()
+        try:
+            api = ipfshttpclient.connect()
+            result=api.ls(cid)
+            # get the CID of the stdout file and gets its content
+            stderrcid=result.as_json().get("Objects")[0].get("Links")[3].get("Hash")
+            # first line contains Python 3.11.2 [or other version], rest of the lines are the requirements.txt of the Docker image
+            response=api.cat(stderrcid).decode('utf-8')
+        finally:
+            api.close()
         #python=response.partition('\n')[0]
         x=re.split("Python (3.[0-9][0-9]*).[0-9]+",response.partition('\n')[0])
         pythonversion=x[1]
@@ -76,7 +78,7 @@ def query(docker: str):
         reqs:list = []
         for req in reqtxt:
             if req != "":
-                y=re.split("([a-z-?]+)",req)
+                y=re.split("([A-z-?]+)",req)
                 reqs.append(y[1])
         return pythonversion, reqs
 

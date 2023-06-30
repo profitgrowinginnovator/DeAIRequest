@@ -3,6 +3,8 @@ from pathlib import Path
 import os
 import shutil
 from .DeProtocolSelector import DeProtocolSelector
+import time
+from os.path import exists
 
 """
 Test the DeAIRequest
@@ -53,16 +55,30 @@ class TestDeAIRequest(unittest.TestCase):
         compareds=[{"url":{"value":"url1","encrypted":True}},{"file":{"value":"file1","encrypted":False}},{"directory":{"value":"directory1","encrypted":True}}]
         self.assertEqual(bp.get_datasets(),compareds,"Remove dataset not working")
 
-        bp.add_docker_image("jupyter/scipy-notebook:latest")
-        bp.set_docker_image("jupyter/scipy-notebook:latest")
+        bp.add_docker_image("amaksimov/python_data_science:latest")
+        bp.set_docker_image("amaksimov/python_data_science:latest")
         path = os.path.abspath(os.path.dirname(__file__))
         job = bp.submit_job(os.path.join(path,Path("test.ipynb")))
-        self.assertNotEmpty(job)   
-        self.assertEqual(bp.get_state(job),"Completed","Job state not working.")
+        self.assertNotEmpty(job)
+        state=bp.get_state(job)
+        while state=="InProgress":
+            time.sleep(0.25)
+            state=bp.get_state(job)
+        self.assertEqual(state,"Completed","Job state not working.")
         logs = bp.get_logs(job) 
         self.assertNotEmpty(logs)
-        result = bp.get_results(job,Path("."))
-        self.assertNotEmpty(result)
+        if not exists("temp"):
+            os.mkdir("temp")
+        try:
+            bp.get_results(job,Path("temp"))
+            for directory in os.listdir(Path("temp")):
+                self.assertTrue(exists(os.path.join("temp",directory,"exitCode")))
+                self.assertTrue(exists(os.path.join("temp",directory,"stdout")))
+                self.assertTrue(exists(os.path.join("temp",directory,"stderr")))
+                self.assertTrue(exists(os.path.join("temp",directory,"outputs")))
+        finally:
+            shutil.rmtree("temp")
+        
 
     def test_error_submit_job(self):
         ep = DeProtocolSelector("Error")
