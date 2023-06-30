@@ -1,16 +1,16 @@
 # The Decentralised AI Request   
-
+  
 Enable for any AI python code to be executed on decentralised AI compute.  
-
+   
 Supported AI compute:  
 [Bacalhau](https://bacalhau.org)  
-
+   
 Required:
-Have a working IPFS Desktop App running on the same machine. You can download it [here](https://docs.ipfs.tech/install/ipfs-desktop/).
-
-Commands:
-python -m build # build the project  
-python -m unittest # run all unit tests  
+Have a working IPFS Desktop App running on the same machine. You can download it [here](https://docs.ipfs.tech/install/ipfs-desktop/).  
+  
+Commands:  
+python -m build # build the project   
+python -m unittest # run all unit tests   
 
 Usage:  
 from deairequest import DeProtocolSelector as selector  
@@ -37,5 +37,5 @@ Afterwards you can submit a job
 job = bp.submit_job(Path("/path/to/notebook.jpynb"))  
 get the logs  
 state = bp.get_state(job)   
-and when the job is finished and the state changes from "InProgress" to either "Complete" or "Error"
+and when the job is finished and the state changes from "InProgress" to either "Complete" or "Error"  
 result = bp.get_results(job,Path("/path/to/output/directory/"))  
