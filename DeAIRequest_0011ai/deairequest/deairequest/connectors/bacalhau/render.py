@@ -75,18 +75,18 @@ def render(target: str, steps: list, config: dict, compile_path: str = None) -> 
         pythonversion=config.get('environments').get('default').get('python')
         for install in toinstall:
             try:
-                #download specific version
-                subprocess.check_call([sys.executable, "-m", "pip", "download", "--python-version", pythonversion, "--platform", "linux_x86_64", "-d",wheelsdir,"--only-binary=:all:",install])        
+                #download specific version for specific platform
+                y=re.split("([A-z-?]+)",install)
+                subprocess.check_call([sys.executable, "-m", "pip", "download", "--python-version", pythonversion, "--platform", "manylinux2014_x86_64", "-d",wheelsdir,"--only-binary=:all:",install])        
             except Exception as excep:
                 try:
-                    #download any version
-                    y=re.split("([A-z-?]+)",install)
-                    subprocess.check_call([sys.executable, "-m", "pip", "download", "--python-version", pythonversion, "--platform", "linux_x86_64", "-d",wheelsdir,"--only-binary=:all:",y[1]])        
+                    #download specific version for linux
+                    subprocess.check_call([sys.executable, "-m", "pip", "download", "--python-version", pythonversion, "--platform", "linux_x86_64", "-d",wheelsdir,"--only-binary=:all:",install])        
                 except Exception as excep:
                     try:
-                        #download without dependencies
+                        #download any version
                         y=re.split("([A-z-?]+)",install)
-                        subprocess.check_call([sys.executable, "-m", "pip", "download", "--python-version", pythonversion, "--platform", "manylinux2014_x86_64", "-d",wheelsdir,"--only-binary=:all:",y[1]])        
+                        subprocess.check_call([sys.executable, "-m", "pip", "download", "--python-version", pythonversion, "--platform", "linux_x86_64", "-d",wheelsdir,"--only-binary=:all:",y[1]]) 
                     except Exception as excep:
                         # fail if neither works
                         raise Exception(f"Sorry but we cannot download the package {install}, please use a docker image that includes this package")
