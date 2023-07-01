@@ -73,11 +73,50 @@ class TestDeAIRequest(unittest.TestCase):
             bp.get_results(job,Path("temp"))
             for directory in os.listdir(Path("temp")):
                 self.assertTrue(exists(os.path.join("temp",directory,"exitCode")))
+                try:
+                    f = open(os.path.join("temp",directory,"exitCode"),"r")
+                    self.assertEqual(f.read(),"0","Bacalhau job did not finish successfully")
+                finally:
+                    f.close()
                 self.assertTrue(exists(os.path.join("temp",directory,"stdout")))
                 self.assertTrue(exists(os.path.join("temp",directory,"stderr")))
                 self.assertTrue(exists(os.path.join("temp",directory,"outputs")))
         finally:
             shutil.rmtree("temp")
+
+        bp.add_docker_image("python:3")
+        bp.set_docker_image("python:3")
+        path = os.path.abspath(os.path.dirname(__file__))
+        job = bp.submit_job(os.path.join(path,Path("test.ipynb")))
+        self.assertNotEmpty(job)
+        state=bp.get_state(job)
+        while state=="InProgress":
+            time.sleep(0.25)
+            state=bp.get_state(job)
+        self.assertEqual(state,"Completed","Job state not working.")
+        logs = bp.get_logs(job) 
+        self.assertNotEmpty(logs)
+        if not exists("temp"):
+            os.mkdir("temp")
+        try:
+            bp.get_results(job,Path("temp"))
+            for directory in os.listdir(Path("temp")):
+                self.assertTrue(exists(os.path.join("temp",directory,"exitCode")))
+                try:
+                    f = open(os.path.join("temp",directory,"exitCode"),"r")
+                    self.assertEqual(f.read(),"0","Bacalhau job did not finish successfully")
+                finally:
+                    f.close()
+                    f = open(os.path.join("temp",directory,"stderr"),"r")
+                    print(f.readlines())
+                    f.close()
+                self.assertTrue(exists(os.path.join("temp",directory,"stdout")))
+                self.assertTrue(exists(os.path.join("temp",directory,"stderr")))
+                self.assertTrue(exists(os.path.join("temp",directory,"outputs")))
+        finally:
+            shutil.rmtree("temp")
+
+        
         
 
     def test_error_submit_job(self):

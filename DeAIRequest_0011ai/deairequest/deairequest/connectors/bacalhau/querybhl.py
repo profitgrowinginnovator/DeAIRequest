@@ -45,45 +45,48 @@ def query(docker: str):
         ),
     )
 
-    try:
-        # get the python version and requirements.txt job running on the docker
-        res = submit(data)
-        # get the job id and wait until it changes from state in progress to either completed or error
-        id = res.job.metadata.id
-        state=states(job_id=id).state.state
-        while state == 'InProgress':
-            state=states(job_id=id).state.state
-            #print('.',end='')
-            time.sleep(0.25)
-        if state=="Error":
-            raise Exception(f"Sorry but we cannot download and inspect the docker image: {docker}, please use a different docker image.")
-        
-        # get the result of the Bacalhau job
-        resultout=results(job_id=id)
-        cid=resultout.results[0].data.cid
-        # download the CID of the outputs directory
-        try:
-            api = ipfshttpclient.connect()
-            result=api.ls(cid)
-            # get the CID of the stdout file and gets its content
-            stderrcid=result.as_json().get("Objects")[0].get("Links")[3].get("Hash")
-            # first line contains Python 3.11.2 [or other version], rest of the lines are the requirements.txt of the Docker image
-            response=api.cat(stderrcid).decode('utf-8')
-        finally:
-            api.close()
-        #python=response.partition('\n')[0]
-        x=re.split("Python (3.[0-9][0-9]*).[0-9]+",response.partition('\n')[0])
-        pythonversion=x[1]
-        reqtxt=response.split('\n')[1:]
-        reqs:list = []
-        for req in reqtxt:
-            if req != "":
-                y=re.split("([A-z-?]+)",req)
-                reqs.append(y[1])
-        return pythonversion, reqs
 
-    except Exception as err:
-        raise RuntimeError(f"The 'bacalhau' backend gave an error: {err}")
+    # get the python version and requirements.txt job running on the docker
+    res = submit(data)
+    # get the job id and wait until it changes from state in progress to either completed or error
+    id = res.job.metadata.id
+    state=states(job_id=id).state.state
+    while state == 'InProgress':
+        state=states(job_id=id).state.state
+        #print('.',end='')
+        time.sleep(0.25)
+    
+    if state=="Error":
+        raise Exception(f"Sorry but we cannot download and inspect the docker image: {docker}, please use a different docker image.")
+    
+    # get the result of the Bacalhau job
+    resultout=results(job_id=id)
+    cid=resultout.results[0].data.cid
+    # download the CID of the outputs directory
+    try:
+        api = ipfshttpclient.connect()
+        result=api.ls(cid)
+        # get the CID of the stdout file and gets its content
+        stderrcid=result.as_json().get("Objects")[0].get("Links")[3].get("Hash")
+        # first line contains Python 3.11.2 [or other version], rest of the lines are the requirements.txt of the Docker image
+        response=api.cat(stderrcid).decode('utf-8')
+    except:
+        raise Exception(f"Sorry but we cannot download and inspect the docker image. Are you sure IPFS is running on the local machine?")
+    finally:
+        api.close()
+        
+    #python=response.partition('\n')[0]
+    x=re.split("Python (3.[0-9][0-9]*).[0-9]+",response.partition('\n')[0])
+    pythonversion=x[1]
+    reqtxt=response.split('\n')[1:]
+    reqs:list = []
+    for req in reqtxt:
+        if req != "":
+            y=re.split("([A-z-?]+)",req)
+            reqs.append(y[1])
+    return pythonversion, reqs
+
+
     
 
 def cli(argv):

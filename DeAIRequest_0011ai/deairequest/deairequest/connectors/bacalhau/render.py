@@ -55,11 +55,11 @@ def render(target: str, steps: list, config: dict, compile_path: str = None) -> 
     finally:
         f2.close()
 
-    toinstall={}
+    toinstall=[]
     for install in rforinstall:
         y=re.split("([A-z-?]+)",install)
         if y[1] not in lines:
-            toinstall.add(install)
+            toinstall.append(install)
 
     if len(toinstall) > 0:
         try:
@@ -83,8 +83,14 @@ def render(target: str, steps: list, config: dict, compile_path: str = None) -> 
                     y=re.split("([A-z-?]+)",install)
                     subprocess.check_call([sys.executable, "-m", "pip", "download", "--python-version", pythonversion, "--platform", "linux_x86_64", "-d",wheelsdir,"--only-binary=:all:",y[1]])        
                 except Exception as excep:
-                    # fail if neither works
-                    raise Exception(f"Sorry but we cannot download the package {install}, please use a docker image that includes this package")
+                    try:
+                        #download without dependencies
+                        y=re.split("([A-z-?]+)",install)
+                        subprocess.check_call([sys.executable, "-m", "pip", "download", "--python-version", pythonversion, "--platform", "manylinux2014_x86_64", "-d",wheelsdir,"--only-binary=:all:",y[1]])        
+                    except Exception as excep:
+                        # fail if neither works
+                        raise Exception(f"Sorry but we cannot download the package {install}, please use a docker image that includes this package")
+ 
     else:
         # Nothing to install
         os.remove(req)

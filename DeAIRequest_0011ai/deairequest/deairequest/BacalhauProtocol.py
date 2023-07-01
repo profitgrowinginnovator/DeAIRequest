@@ -141,7 +141,6 @@ class BacalhauProtocol(DeProtocol):
         finally:
             f.close()
         name = value.replace("/","-")
-        print(name)
         try:
             file = open(os.path.join(path,name+".req"),'w')
             for req in reqs:
