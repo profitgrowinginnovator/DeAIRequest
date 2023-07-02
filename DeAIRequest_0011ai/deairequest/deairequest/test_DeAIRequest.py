@@ -24,7 +24,21 @@ class TestDeAIRequest(unittest.TestCase):
         os.remove(os.path.join(path,"docker_images.pv")) 
         if os.path.isfile(os.path.join(path,"docker_images.pv.bak")):
             os.rename(os.path.join(path,"docker_images.pv.bak"),os.path.join(path,"docker_images.pv"))
-        
+    def test_data(self):
+        bp = DeProtocolSelector("Bacalhau")
+        path = os.path.abspath(os.path.dirname(__file__))
+        bp.add_docker_image("amaksimov/python_data_science:latest")
+        bp.set_docker_image("amaksimov/python_data_science:latest")
+        bp.add_dataset(bp.get_url_data_type(),"https://raw.githubusercontent.com/awesomedata/apd-core/master/core/Museums/Minneapolis-Institute-of-Arts-metadata.yml",True)
+        bp.add_dataset(bp.get_url_data_type(),"https://raw.githubusercontent.com/awesomedata/apd-core/master/core/Museums/Minneapolis-Institute-of-Arts-metadata.yml",False)
+        bp.add_dataset(bp.get_file_data_type(),os.path.join(path,Path("file")),True)
+        bp.add_dataset(bp.get_file_data_type(),os.path.join(path,Path("file")),False)
+        bp.add_dataset(bp.get_directory_data_type(),os.path.join(path,Path("dir")),True)
+        bp.add_dataset(bp.get_directory_data_type(),os.path.join(path,Path("dir")),False)
+        bp.add_dataset(bp.get_ipfs_data_type(),"cid",True)
+        bp.add_dataset(bp.get_ipfs_data_type(),"cid",False)
+        job = bp.submit_job(os.path.join(path,Path("test2.ipynb")))
+        self.assertNotEmpty(job)
 
     def test_submit_job(self):
         bp = DeProtocolSelector("Bacalhau")
@@ -36,15 +50,16 @@ class TestDeAIRequest(unittest.TestCase):
         self.assertEqual(bp.get_file_data_type(),"file","Expected file data type")
         self.assertEqual(bp.get_directory_data_type(),"directory","Expected directory data type")
         self.assertEqual(bp.get_ipfs_data_type(),"ipfs","Expected ipfs data type")
-        self.assertEqual(bp.get_docker_images(),["tensorflow/tensorflow:latest-gpu", "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime", "python:3"],"Expected docker images")
+        self.assertEqual(bp.get_docker_images(),["amaksimov/python_data_science:latest","tensorflow/tensorflow:latest-gpu-jupyter", "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime", "python:3"],"Expected docker images")
         bp.add_docker_image("pypy:latest")
         bp.set_docker_image("pypy:latest")
         self.assertEqual(bp.get_docker_image(),"pypy:latest","set docker image not working")
-        self.assertEqual(bp.get_docker_images(),["tensorflow/tensorflow:latest-gpu", "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime", "python:3","pypy:latest"],"Expected docker image add function to work")
+        self.assertEqual(bp.get_docker_images(),["amaksimov/python_data_science:latest","tensorflow/tensorflow:latest-gpu-jupyter", "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime", "python:3","pypy:latest"],"Expected docker image add function to work")
         bp.remove_docker_image("pypy:latest")
-        self.assertEqual(bp.get_docker_images(),["tensorflow/tensorflow:latest-gpu", "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime", "python:3"],"Expected docker image remove function to work")
+        self.assertEqual(bp.get_docker_images(),["amaksimov/python_data_science:latest","tensorflow/tensorflow:latest-gpu-jupyter", "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime", "python:3"],"Expected docker image remove function to work")
         self.assertEqual(bp.get_docker_image(),"","Docker image is supposed to be not set")
 
+        bp.remove_datasets()
         self.assertEqual(bp.get_datasets(),list(),"Expected empty datasets")
         bp.add_dataset(bp.get_url_data_type(),"url1",True)
         bp.add_dataset(bp.get_file_data_type(),"file1",False)

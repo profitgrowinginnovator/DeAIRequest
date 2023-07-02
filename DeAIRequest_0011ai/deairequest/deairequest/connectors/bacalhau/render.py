@@ -56,10 +56,12 @@ def render(target: str, steps: list, config: dict, compile_path: str = None) -> 
         f2.close()
 
     toinstall=[]
+
     for install in rforinstall:
-        y=re.split("([A-z-?]+)",install)
-        if y[1] not in lines:
-            toinstall.append(install)
+        if install != "":
+            y=re.split("([A-z-?]+)",install)
+            if y[1] not in lines:
+                toinstall.append(install)
 
     if len(toinstall) > 0:
         try:

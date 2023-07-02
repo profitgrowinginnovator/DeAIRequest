@@ -1,5 +1,4 @@
 
-import requests
 from pathlib import Path
 import os
 from .DeProtocol import DeProtocol
@@ -205,6 +204,14 @@ class BacalhauProtocol(DeProtocol):
         return self.datasets
     
     """
+    Remove all data sets
+    @oaram self:
+    """
+    @classmethod
+    def remove_datasets(self):
+        self.datasets=list(dict())
+
+    """
     Remove a data set
     @oaram self:
     @param type: the type of data set
@@ -227,7 +234,7 @@ class BacalhauProtocol(DeProtocol):
         name=os.path.basename(ipynb)
         name=name.replace('.ipynb','')
         pythonversion=self.docker_images_pyv[self.get_docker_image()]
-        return bcljob.main(ipynb,name,self.get_docker_image(),pythonversion)
+        return bcljob.main(ipynb,name,self.get_docker_image(),pythonversion,self.datasets)
     
     """
     Get the logs from the job
@@ -237,8 +244,8 @@ class BacalhauProtocol(DeProtocol):
     @raises: exception if the job id is not known
     """
     @classmethod
-    def get_logs(self, job):
-        return events(job_id=job)
+    def get_logs(self, job)->str:
+       return events(job_id=job)
     
     """
     Get the job results 

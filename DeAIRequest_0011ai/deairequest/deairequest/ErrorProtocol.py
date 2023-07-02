@@ -50,7 +50,7 @@ class ErrorProtocol(DeProtocol):
         raise Exception("job not supported")
         
     @classmethod
-    def get_logs(self, job):
+    def get_logs(self, job)->str:
         raise Exception("job not supported")
     
     @classmethod

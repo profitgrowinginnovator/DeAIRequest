@@ -25,7 +25,7 @@ class DeProtocol(ABC):
     @raises: exception if the job id is not known
     """
     @abstractmethod
-    def get_logs(self, job:str, params=""):
+    def get_logs(self, job:str, params="")->str:
         pass
 
     """

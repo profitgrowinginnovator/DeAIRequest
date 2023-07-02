@@ -99,7 +99,6 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
                         url=_encode_tar_gzip(base_path,"inputs"),
     
                     ),
-
                 ],
                 outputs=[
                     StorageSpec(
@@ -139,7 +138,6 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
                         url=_encode_tar_gzip(base_path,"inputs"),
     
                     ),
-
                 ],
                 outputs=[
                     StorageSpec(
@@ -155,6 +153,9 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
                 do_not_track=False,
             ),
         )
+        datasets=_generateStorageSpec(config)
+        
+        #print(datasets)
     return data
 
 def _download_wheels(dir: Path, reqs: Path) -> str:
@@ -187,3 +188,7 @@ def _encode_tar_gzip(dir: Path, name: str) -> str:
     return encoded
 
 
+def _generateStorageSpec(config:dict) -> dict:
+    #print("****************************")
+    #print(config)
+    return {}
