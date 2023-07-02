@@ -154,7 +154,9 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
             ),
         )
         datasets=_generateStorageSpec(config)
-        
+        if datasets != {}:
+            data["inputs"].append(datasets)
+        #print(data)
         #print(datasets)
     return data
 
@@ -164,7 +166,8 @@ def _download_wheels(dir: Path, reqs: Path) -> str:
         api = ipfshttpclient.connect()
         cid = api.add(wheelsdir)
     finally:
-        api.close()
+        if api != None:
+            api.close()
     return cid
     
 
@@ -191,4 +194,7 @@ def _encode_tar_gzip(dir: Path, name: str) -> str:
 def _generateStorageSpec(config:dict) -> dict:
     #print("****************************")
     #print(config)
-    return {}
+    ss={}
+    ds=config.get("datasources")
+
+    return ss
