@@ -5,6 +5,7 @@ import shutil
 from .DeProtocolSelector import DeProtocolSelector
 import time
 from os.path import exists
+import ipfshttpclient
 
 """
 Test the DeAIRequest
@@ -29,19 +30,28 @@ class TestDeAIRequest(unittest.TestCase):
         path = os.path.abspath(os.path.dirname(__file__))
         bp.add_docker_image("amaksimov/python_data_science:latest")
         bp.set_docker_image("amaksimov/python_data_science:latest")
-        bp.add_dataset(bp.get_url_data_type(),"https://raw.githubusercontent.com/awesomedata/apd-core/master/core/Museums/Minneapolis-Institute-of-Arts-metadata.yml",True)
+        #bp.add_dataset(bp.get_url_data_type(),"https://raw.githubusercontent.com/awesomedata/apd-core/master/core/Museums/Minneapolis-Institute-of-Arts-metadata.yml",True)
         bp.add_dataset(bp.get_url_data_type(),"https://raw.githubusercontent.com/awesomedata/apd-core/master/core/Museums/Minneapolis-Institute-of-Arts-metadata.yml",False)
-        bp.add_dataset(bp.get_file_data_type(),os.path.join(path,Path("file")),True)
-        bp.add_dataset(bp.get_file_data_type(),os.path.join(path,Path("file")),False)
-        bp.add_dataset(bp.get_directory_data_type(),os.path.join(path,Path("dir")),True)
-        bp.add_dataset(bp.get_directory_data_type(),os.path.join(path,Path("dir")),False)
-        bp.add_dataset(bp.get_ipfs_data_type(),"cid",True)
-        bp.add_dataset(bp.get_ipfs_data_type(),"cid",False)
+        #bp.add_dataset(bp.get_file_data_type(),os.path.join(path,Path("test.txt")),True)
+        bp.add_dataset(bp.get_file_data_type(),os.path.join(path,Path("test.txt")),False)
+        #bp.add_dataset(bp.get_directory_data_type(),os.path.join(path,Path("testdata")),True)
+        bp.add_dataset(bp.get_directory_data_type(),os.path.join(path,Path("testdata")),False)
+        try:
+            api = ipfshttpclient.connect()
+            cid = api.add(os.path.join(path,"testdata",Path("test.txt")))
+            cid=cid.as_json().get("Hash")
+        finally:
+            if api != None:
+                api.close()
+        bp.add_dataset(bp.get_ipfs_data_type(),cid,True)
+        bp.add_dataset(bp.get_ipfs_data_type(),cid,False)
         job = bp.submit_job(os.path.join(path,Path("test2.ipynb")))
         self.assertNotEmpty(job)
+        #print(job)
 
     def test_submit_job(self):
         bp = DeProtocolSelector("Bacalhau")
+        path = os.path.abspath(os.path.dirname(__file__))
         self.assertEqual(bp.get_name(),"Bacalhau","Expected name to be bacalhau")
         self.assertEqual(bp.get_icon(),Path(os.getcwd(),"logo.svg"), "Icon is not working")
         self.assertEqual(bp.get_ext(),"bhl", "Extension is not working")
@@ -61,19 +71,20 @@ class TestDeAIRequest(unittest.TestCase):
 
         bp.remove_datasets()
         self.assertEqual(bp.get_datasets(),list(),"Expected empty datasets")
-        bp.add_dataset(bp.get_url_data_type(),"url1",True)
-        bp.add_dataset(bp.get_file_data_type(),"file1",False)
-        bp.add_dataset(bp.get_directory_data_type(),"directory1",True)
+        bp.add_dataset(bp.get_url_data_type(),"https://raw.githubusercontent.com/awesomedata/apd-core/master/core/Museums/Minneapolis-Institute-of-Arts-metadata.yml",True)
+        bp.add_dataset(bp.get_file_data_type(),os.path.join(path,"testdata",Path("test.txt")),False)
+        bp.add_dataset(bp.get_directory_data_type(),os.path.join(path,"testdata"),True)
         bp.add_dataset(bp.get_ipfs_data_type(),"ipfs1",False)
-        compareds=[{"url":{"value":"url1","encrypted":True}},{"file":{"value":"file1","encrypted":False}},{"directory":{"value":"directory1","encrypted":True}},{"ipfs":{"value":"ipfs1","encrypted":False}}]
+        compareds=[{"url":{"value":"https://raw.githubusercontent.com/awesomedata/apd-core/master/core/Museums/Minneapolis-Institute-of-Arts-metadata.yml","encrypted":True}},{"file":{"value":os.path.join(path,"testdata",Path("test.txt")),"encrypted":False}},{"directory":{"value":os.path.join(path,"testdata"),"encrypted":True}},{"ipfs":{"value":"ipfs1","encrypted":False}}]
         bp.remove_dataset(bp.get_ipfs_data_type(),"ipfs1",False)
-        compareds=[{"url":{"value":"url1","encrypted":True}},{"file":{"value":"file1","encrypted":False}},{"directory":{"value":"directory1","encrypted":True}}]
+        compareds=[{"url":{"value":"https://raw.githubusercontent.com/awesomedata/apd-core/master/core/Museums/Minneapolis-Institute-of-Arts-metadata.yml","encrypted":True}},{"file":{"value":os.path.join(path,"testdata",Path("test.txt")),"encrypted":False}},{"directory":{"value":os.path.join(path,"testdata"),"encrypted":True}}]
         self.assertEqual(bp.get_datasets(),compareds,"Remove dataset not working")
 
         bp.add_docker_image("amaksimov/python_data_science:latest")
         bp.set_docker_image("amaksimov/python_data_science:latest")
         path = os.path.abspath(os.path.dirname(__file__))
         job = bp.submit_job(os.path.join(path,Path("test.ipynb")))
+        #print(job)
         self.assertNotEmpty(job)
         state=bp.get_state(job)
         while state=="InProgress":

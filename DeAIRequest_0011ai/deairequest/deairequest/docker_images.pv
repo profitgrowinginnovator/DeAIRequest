@@ -1,4 +1,5 @@
-tensorflow/tensorflow:latest-gpu-jupyter*3.11
+amaksimov/python_data_science:latest*3.8tensorflow/tensorflow:latest-gpu-jupyter*3.11
 pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime*3.9
+python:3*3.10
 amaksimov/python_data_science:latest*3.8
 python:3*3.11

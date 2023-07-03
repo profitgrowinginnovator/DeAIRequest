@@ -62,6 +62,8 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
     #    print(f'user:{config.get("runtime_options").get("docker_user")}')  
     #    print(f'pwd:{config.get("runtime_options").get("docker_password")}')
         #client.push.
+    datasets=_generateStorageSpec(config)
+
     requirements=os.path.join(base_path,"inputs/requirements.txt")
     if exists(requirements):
         cids = _download_wheels(base_path,requirements)
@@ -70,94 +72,64 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
         for x in cids:
             if x['Name'] == "wheels":
                 cid = x['Hash']
-        #print(f"cid:{cid}")
-
-        data = dict(
-            APIVersion='V1beta1',
-            ClientID=get_client_id(),
-            Spec=Spec(
-                engine="Docker",
-                verifier="Noop",
-                publisher_spec=PublisherSpec(type="ipfs"),
-                docker=JobSpecDocker(
-                    image=config.get('environments').get('default').get('image_tag'),
-                    entrypoint=["/bin/sh","-c","pip3 install --no-index --find-links /wheels -r /inputs/inputs/requirements.txt;python3 /inputs/inputs/code.py"],#,";","python3","/inputs/inputs/code.py"],
-                    working_directory="/inputs",
-                ),
-                resources=ResourceUsageConfig(
-                    gpu="0",
-                ),
-                inputs=[
-                    StorageSpec(
+        if datasets != {}:
+            datasets.append(StorageSpec(
                         storage_source="IPFS",
                         path="/wheels",
                         cid=cid, 
-                    ),
+                    ))
+            datasets.append(
                     StorageSpec(
                         storage_source="Inline",
                         path="/inputs",
                         url=_encode_tar_gzip(base_path,"inputs"),
     
-                    ),
-                ],
-                outputs=[
-                    StorageSpec(
-                        storage_source="IPFS",
-                        name="outputs",
-                        path="/outputs",
-                    )
-                ],
-                language=JobSpecLanguage(job_context=None),
-                wasm=None,
-                timeout=1800,
-                deal=Deal(concurrency=1, confidence=0, min_bids=0),
-                do_not_track=False,
-            ),
-        )
+                    ))
     else:
-        #nothing to install
-        data = dict(
-            APIVersion='V1beta1',
-            ClientID=get_client_id(),
-            Spec=Spec(
-                engine="Docker",
-                verifier="Noop",
-                publisher_spec=PublisherSpec(type="ipfs"),
-                docker=JobSpecDocker(
-                    image=config.get('environments').get('default').get('image_tag'),
-                    entrypoint=["/bin/sh","-c","python3 /inputs/inputs/code.py"],
-                    working_directory="/inputs",
-                ),
-                resources=ResourceUsageConfig(
-                    gpu="0",
-                ),
-                inputs=[
+        if datasets != {}:
+            datasets.append(
                     StorageSpec(
                         storage_source="Inline",
                         path="/inputs",
                         url=_encode_tar_gzip(base_path,"inputs"),
     
-                    ),
-                ],
-                outputs=[
-                    StorageSpec(
-                        storage_source="IPFS",
-                        name="outputs",
-                        path="/outputs",
-                    )
-                ],
-                language=JobSpecLanguage(job_context=None),
-                wasm=None,
-                timeout=1800,
-                deal=Deal(concurrency=1, confidence=0, min_bids=0),
-                do_not_track=False,
+                    ),)
+
+
+    data = dict(
+        APIVersion='V1beta1',
+        ClientID=get_client_id(),
+        Spec=Spec(
+            engine="Docker",
+            verifier="Noop",
+            publisher_spec=PublisherSpec(type="ipfs"),
+            docker=JobSpecDocker(
+                image=config.get('environments').get('default').get('image_tag'),
+                entrypoint=["/bin/sh","-c","pip3 install --no-index --find-links /wheels -r /inputs/inputs/requirements.txt;mv /inputs/inputs/code.py /inputs/code.py;python3 /inputs/code.py"],#,";","python3","/inputs/inputs/code.py"],
+                working_directory="/inputs",
             ),
-        )
-        datasets=_generateStorageSpec(config)
-        if datasets != {}:
-            data["inputs"].append(datasets)
-        #print(data)
-        #print(datasets)
+            resources=ResourceUsageConfig(
+                gpu="0",
+            ),
+            inputs=datasets
+            ,
+            outputs=[
+                StorageSpec(
+                    storage_source="IPFS",
+                    name="outputs",
+                    path="/outputs",
+                )
+            ],
+            language=JobSpecLanguage(job_context=None),
+            wasm=None,
+            timeout=1800,
+            deal=Deal(concurrency=1, confidence=0, min_bids=0),
+            do_not_track=False,
+        ),
+    )
+
+    #print(data)
+       
     return data
 
 def _download_wheels(dir: Path, reqs: Path) -> str:
@@ -191,10 +163,42 @@ def _encode_tar_gzip(dir: Path, name: str) -> str:
     return encoded
 
 
-def _generateStorageSpec(config:dict) -> dict:
-    #print("****************************")
-    #print(config)
-    ss={}
-    ds=config.get("datasources")
+def _generateStorageSpec(config:dict) -> list:
+    ss=[]
+    dss=config.get("datasources")
+    for ds in dss:
+        type = list(ds.keys())[0]
+        value = ds.get(type).get('value')
+        encrypted = ds.get(type).get('encrypted')
+        if type == 'file' or type == 'directory':
 
+            try:
+                api = ipfshttpclient.connect()
+                cid = api.add(os.path.join(value))
+                if isinstance(cid,list):
+                    cid=cid[0].as_json().get("Hash")
+                else:
+                    cid=cid.as_json().get("Hash")
+            finally:
+                if api != None:
+                    api.close()
+            ss.append(StorageSpec(
+                    storage_source="IPFS",
+                    path="/inputs/"+os.path.basename(value),
+                    cid=cid, 
+                ),)
+        elif type == 'ipfs':
+            ss.append(StorageSpec(
+                    storage_source="IPFS",
+                    path="/inputs",
+                    cid=value, 
+                ),)
+        else: #url
+            ss.append(StorageSpec(
+                        name=value,
+                        storage_source="URLDownload",
+                        path="/inputs",
+                        url=value,
+                    ),)
+            
     return ss
