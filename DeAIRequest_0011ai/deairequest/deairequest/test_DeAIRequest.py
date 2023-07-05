@@ -38,17 +38,40 @@ class TestDeAIRequest(unittest.TestCase):
         bp.add_dataset(bp.get_directory_data_type(),os.path.join(path,Path("testdata")),False)
         try:
             api = ipfshttpclient.connect()
-            cid = api.add(os.path.join(path,"testdata",Path("test.txt")))
+            cid = api.add(os.path.join(path,Path("test2.txt")))
             cid=cid.as_json().get("Hash")
         finally:
             if api != None:
                 api.close()
-        bp.add_dataset(bp.get_ipfs_data_type(),cid,True)
+        #bp.add_dataset(bp.get_ipfs_data_type(),cid,True)
         bp.add_dataset(bp.get_ipfs_data_type(),cid,False)
         job = bp.submit_job(os.path.join(path,Path("test2.ipynb")))
         self.assertNotEmpty(job)
-        #print(job)
-
+        state=bp.get_state(job)
+        while state=="InProgress":
+            time.sleep(0.25)
+            state=bp.get_state(job)
+        self.assertEqual(state,"Completed","Job state not working.")
+        if not exists("temp2"):
+            os.mkdir("temp2")
+        try:
+            bp.get_results(job,Path("temp2"))
+            for directory in os.listdir(Path("temp2")):
+                self.assertTrue(exists(os.path.join("temp2",directory,"exitCode")))
+                try:
+                    f = open(os.path.join("temp2",directory,"exitCode"),"r")
+                    self.assertEqual(f.read(),"0","Bacalhau job did not finish successfully")
+                finally:
+                    f.close()
+                
+                self.assertTrue(exists(os.path.join("temp2",directory,"outputs","inputs","test.txt")))
+                self.assertTrue(exists(os.path.join("temp2",directory,"outputs","inputs","testdata","test.txt")))
+                self.assertTrue(exists(os.path.join("temp2",directory,"outputs","inputs","testdata","test2.txt")))
+                self.assertTrue(exists(os.path.join("temp2",directory,"outputs","inputs","Minneapolis-Institute-of-Arts-metadata.yml")))
+                
+        finally:
+            shutil.rmtree("temp2")
+            
     def test_submit_job(self):
         bp = DeProtocolSelector("Bacalhau")
         path = os.path.abspath(os.path.dirname(__file__))

@@ -85,6 +85,7 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
                         url=_encode_tar_gzip(base_path,"inputs"),
     
                     ))
+        command=["/bin/sh","-c","pip3 install --no-index --find-links /wheels -r /inputs/inputs/requirements.txt;mv /inputs/inputs/code.py /inputs/code.py;python3 /inputs/code.py"]
     else:
         if datasets != {}:
             datasets.append(
@@ -94,6 +95,7 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
                         url=_encode_tar_gzip(base_path,"inputs"),
     
                     ),)
+        command=["/bin/sh","-c","mv /inputs/inputs/code.py /inputs/code.py;python3 /inputs/code.py"]
 
 
     data = dict(
@@ -105,7 +107,7 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
             publisher_spec=PublisherSpec(type="ipfs"),
             docker=JobSpecDocker(
                 image=config.get('environments').get('default').get('image_tag'),
-                entrypoint=["/bin/sh","-c","pip3 install --no-index --find-links /wheels -r /inputs/inputs/requirements.txt;mv /inputs/inputs/code.py /inputs/code.py;python3 /inputs/code.py"],#,";","python3","/inputs/inputs/code.py"],
+                entrypoint=command,
                 working_directory="/inputs",
             ),
             resources=ResourceUsageConfig(
@@ -176,7 +178,7 @@ def _generateStorageSpec(config:dict) -> list:
                 api = ipfshttpclient.connect()
                 cid = api.add(os.path.join(value))
                 if isinstance(cid,list):
-                    cid=cid[0].as_json().get("Hash")
+                    cid=cid[len(cid)-1].as_json().get("Hash")
                 else:
                     cid=cid.as_json().get("Hash")
             finally:
@@ -190,7 +192,7 @@ def _generateStorageSpec(config:dict) -> list:
         elif type == 'ipfs':
             ss.append(StorageSpec(
                     storage_source="IPFS",
-                    path="/inputs",
+                    path="/inputs/"+cid,
                     cid=value, 
                 ),)
         else: #url
