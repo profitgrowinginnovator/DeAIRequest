@@ -45,6 +45,7 @@ class TestDeAIRequest(unittest.TestCase):
                 api.close()
         #bp.add_dataset(bp.get_ipfs_data_type(),cid,True)
         bp.add_dataset(bp.get_ipfs_data_type(),cid,False)
+        bp.add_dataset(bp.get_ipfs_data_type(),'ipfs://Qmcmb4MU4BN727xKoodGgpoeRAiiua2DwPYMSUDPZitMn1:/data', False)
         job = bp.submit_job(os.path.join(path,Path("test2.ipynb")))
         self.assertNotEmpty(job)
         state=bp.get_state(job)
@@ -67,10 +68,12 @@ class TestDeAIRequest(unittest.TestCase):
                 self.assertTrue(exists(os.path.join("temp2",directory,"outputs","inputs","test.txt")))
                 self.assertTrue(exists(os.path.join("temp2",directory,"outputs","inputs","testdata","test.txt")))
                 self.assertTrue(exists(os.path.join("temp2",directory,"outputs","inputs","testdata","test2.txt")))
+                self.assertTrue(exists(os.path.join("temp2",directory,"outputs","inputs","data")))
                 self.assertTrue(exists(os.path.join("temp2",directory,"outputs","inputs","Minneapolis-Institute-of-Arts-metadata.yml")))
                 
         finally:
-            shutil.rmtree("temp2")
+            #shutil.rmtree("temp2")
+            pass
             
     def test_submit_job(self):
         bp = DeProtocolSelector("Bacalhau")
@@ -156,9 +159,9 @@ class TestDeAIRequest(unittest.TestCase):
                     self.assertEqual(f.read(),"0","Bacalhau job did not finish successfully")
                 finally:
                     f.close()
-                    f = open(os.path.join("temp",directory,"stderr"),"r")
-                    print(f.readlines())
-                    f.close()
+                    #f = open(os.path.join("temp",directory,"stderr"),"r")
+                    #print(f.readlines())
+                    #f.close()
                 self.assertTrue(exists(os.path.join("temp",directory,"stdout")))
                 self.assertTrue(exists(os.path.join("temp",directory,"stderr")))
                 self.assertTrue(exists(os.path.join("temp",directory,"outputs")))

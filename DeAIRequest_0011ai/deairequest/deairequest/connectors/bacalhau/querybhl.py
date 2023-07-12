@@ -72,7 +72,8 @@ def query(docker: str):
         response=api.cat(stderrcid).decode('utf-8')
     except:
         raise Exception(f"Sorry but we cannot download and inspect the docker image. Are you sure IPFS is running on the local machine?")
-    finally:
+
+    if api != None:
         api.close()
         
     #python=response.partition('\n')[0]

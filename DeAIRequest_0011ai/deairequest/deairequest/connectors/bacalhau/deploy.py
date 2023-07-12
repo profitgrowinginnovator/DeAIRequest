@@ -111,7 +111,7 @@ def create_job(config: dict, base_path: Path, root_file: str) -> str:
                 working_directory="/inputs",
             ),
             resources=ResourceUsageConfig(
-                gpu="0",
+                gpu="1",
             ),
             inputs=datasets
             ,
@@ -190,11 +190,24 @@ def _generateStorageSpec(config:dict) -> list:
                     cid=cid, 
                 ),)
         elif type == 'ipfs':
+
+            if value.startswith('ipfs://'):
+                value=value[7:]
+
+            dir=value
+            # check if the CID is of the format CID:/path
+            pos = value.find(':')
+            if pos > -1:
+                nt=pos+1
+                dir=value[nt:]
+                value=value[:pos]
+
             ss.append(StorageSpec(
                     storage_source="IPFS",
-                    path="/inputs/"+cid,
+                    path="/inputs/"+dir,
                     cid=value, 
                 ),)
+
         else: #url
             ss.append(StorageSpec(
                         name=value,
