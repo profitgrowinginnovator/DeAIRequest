@@ -72,8 +72,7 @@ class TestDeAIRequest(unittest.TestCase):
                 self.assertTrue(exists(os.path.join("temp2",directory,"outputs","inputs","Minneapolis-Institute-of-Arts-metadata.yml")))
                 
         finally:
-            #shutil.rmtree("temp2")
-            pass
+            shutil.rmtree("temp2")
             
     def test_submit_job(self):
         bp = DeProtocolSelector("Bacalhau")
